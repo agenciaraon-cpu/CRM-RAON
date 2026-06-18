@@ -13,7 +13,8 @@ import {
   deleteDoc,
   getDoc,
 } from "firebase/firestore";
-import { db } from "../lib/firebase";
+import { db, auth } from "../lib/firebase";
+import { useAuthState } from "react-firebase-hooks/auth";
 
 export interface Client {
   id: number;
@@ -178,40 +179,58 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  const requireAdmin = () => {
+    if (user?.email !== "agenciaraon@gmail.com") {
+      alert("Acesso Restrito: Apenas administradores (agenciaraon@gmail.com) podem realizar alterações.");
+      return false;
+    }
+    return true;
+  };
+
   const addTicket = async (ticket: any) => {
+    if (!requireAdmin()) return;
     await setDoc(doc(db, "tickets", ticket.id.toString()), ticket);
   };
   const removeTicket = async (id: number) => {
+    if (!requireAdmin()) return;
     await deleteDoc(doc(db, "tickets", id.toString()));
   };
 
   const addCampaign = async (campaign: any) => {
+    if (!requireAdmin()) return;
     await setDoc(doc(db, "campaigns", campaign.id.toString()), campaign);
   };
   const removeCampaign = async (id: number) => {
+    if (!requireAdmin()) return;
     await deleteDoc(doc(db, "campaigns", id.toString()));
   };
 
   const addTeamMember = async (member: any) => {
+    if (!requireAdmin()) return;
     await setDoc(doc(db, "team", member.id.toString()), member);
   };
   const removeTeamMember = async (id: number) => {
+    if (!requireAdmin()) return;
     await deleteDoc(doc(db, "team", id.toString()));
   };
 
   const removeClient = async (id: number) => {
+    if (!requireAdmin()) return;
     await deleteDoc(doc(db, "clients", id.toString()));
   };
 
   const removeTransaction = async (id: number) => {
+    if (!requireAdmin()) return;
     await deleteDoc(doc(db, "transactions", id.toString()));
   };
 
   const setCrmData = async (data: any) => {
+    if (!requireAdmin()) return;
     await setDoc(doc(db, "boardConfig", "crm"), data);
   };
 
   const removeLead = async (id: string, colId: string) => {
+    if (!requireAdmin()) return;
     const newLeads = { ...crmData.leads };
     delete newLeads[id];
     const newColumn = {
@@ -229,10 +248,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const setProjectData = async (data: any) => {
+    if (!requireAdmin()) return;
     await setDoc(doc(db, "boardConfig", "projects"), data);
   };
 
   const removeProject = async (id: string, colId: string) => {
+    if (!requireAdmin()) return;
     const newProjects = { ...projectData.projects };
     delete newProjects[id];
     const newColumn = {
@@ -250,6 +271,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const addClient = async (client: Client) => {
+    if (!requireAdmin()) return;
     await setDoc(doc(db, "clients", client.id.toString()), client);
     // Automatically add billing transaction for the new client
     const transactionId = Date.now();
@@ -265,6 +287,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const addTransaction = async (t: Transaction) => {
+    if (!requireAdmin()) return;
     await setDoc(doc(db, "transactions", t.id.toString()), t);
   };
 

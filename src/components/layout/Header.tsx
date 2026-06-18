@@ -1,5 +1,7 @@
-import { Bell, Search, Menu, Moon, Sun } from 'lucide-react';
+import { Bell, Search, Menu, Moon, Sun, LogOut } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { auth } from '../../lib/firebase';
+import { signOut } from 'firebase/auth';
 
 export default function Header() {
   const [isDark, setIsDark] = useState(false);
@@ -42,6 +44,13 @@ export default function Header() {
         <button className="relative p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
           <span className="absolute top-1.5 right-1.5 block h-2 w-2 rounded-full bg-raon-orange ring-2 ring-white dark:ring-slate-900" />
           <Bell className="h-5 w-5" />
+        </button>
+        <button 
+          onClick={() => signOut(auth)}
+          className="ml-2 px-3 py-1.5 text-sm font-medium text-red-500 hover:text-white border border-red-200 hover:bg-red-500 hover:border-transparent rounded-lg transition-colors flex items-center gap-2"
+        >
+          <LogOut className="h-4 w-4" />
+          <span>Sair</span>
         </button>
       </div>
     </header>
