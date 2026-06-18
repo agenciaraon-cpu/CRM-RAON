@@ -1,27 +1,10 @@
 import { useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { Plus, MoreHorizontal, Phone, Mail, Building2, MapPin } from 'lucide-react';
-
-const initialData = {
-  columns: {
-    'col-1': { id: 'col-1', title: 'Novo Lead', leadIds: ['lead-1', 'lead-2'] },
-    'col-2': { id: 'col-2', title: 'Contato Realizado', leadIds: ['lead-3'] },
-    'col-3': { id: 'col-3', title: 'Proposta Enviada', leadIds: ['lead-4'] },
-    'col-4': { id: 'col-4', title: 'Negociação', leadIds: [] },
-    'col-5': { id: 'col-5', title: 'Fechado', leadIds: [] },
-    'col-6': { id: 'col-6', title: 'Perdido', leadIds: [] },
-  },
-  leads: {
-    'lead-1': { id: 'lead-1', name: 'Carlos Silva', company: 'Tech Nova', phone: '+55 11 9999-9999', email: 'carlos@technova.com', tags: ['Instagram'], value: 'R$ 5.000' },
-    'lead-2': { id: 'lead-2', name: 'Ana Oliveira', company: 'Studio Beauty', phone: '+55 21 8888-8888', email: 'ana@studio.com', tags: ['Google Ads'], value: 'R$ 2.500' },
-    'lead-3': { id: 'lead-3', name: 'Roberto Santos', company: 'Engenharia RS', phone: '+55 31 7777-7777', email: 'roberto@engrs.com', tags: ['Indicação'], value: 'R$ 15.000' },
-    'lead-4': { id: 'lead-4', name: 'Julia Costa', company: 'Consultoria JC', phone: '+55 41 6666-6666', email: 'julia@jc.com', tags: ['Orgânico'], value: 'R$ 8.000' },
-  },
-  columnOrder: ['col-1', 'col-2', 'col-3', 'col-4', 'col-5', 'col-6'],
-};
+import { Plus, MoreHorizontal, Phone, Mail, Building2, MapPin, Trash } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
 
 export default function CRM() {
-  const [data, setData] = useState(initialData);
+  const { crmData: data, setCrmData: setData, removeLead } = useAppContext();
 
   const onDragEnd = (result: DropResult) => {
     const { destination, source, draggableId } = result;
@@ -114,11 +97,19 @@ export default function CRM() {
                                   snapshot.isDragging ? 'shadow-xl ring-2 ring-raon-blue rotate-2' : ''
                                 }`}
                               >
-                                <div className="flex justify-between items-start mb-2">
+                                <div className="flex justify-between items-start mb-2 group/lead">
                                   <h4 className="font-semibold text-slate-900 dark:text-white leading-tight">{lead.company}</h4>
-                                  <span className="text-xs font-bold text-raon-orange bg-orange-100 dark:bg-orange-500/10 px-2 py-1 rounded-md">
-                                    {lead.value}
-                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-raon-orange bg-orange-100 dark:bg-orange-500/10 px-2 py-1 rounded-md">
+                                      {lead.value}
+                                    </span>
+                                    <button 
+                                      onClick={() => removeLead(lead.id, column.id)}
+                                      className="text-slate-400 hover:text-red-500 opacity-0 group-hover/lead:opacity-100 transition-opacity"
+                                    >
+                                      <Trash className="h-4 w-4" />
+                                    </button>
+                                  </div>
                                 </div>
                                 <div className="flex items-center text-sm text-slate-500 dark:text-slate-400 mb-2">
                                   <Building2 className="h-3 w-3 mr-1" />

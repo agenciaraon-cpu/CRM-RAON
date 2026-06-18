@@ -2,36 +2,47 @@ import {
   Users, Target, DollarSign, ArrowUpRight, ArrowDownRight, Briefcase, FileCheck, AlertCircle, CheckCircle2
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { useAppContext } from '../context/AppContext';
 
-const revenueData = [
-  { name: 'Jan', total: 45000 },
-  { name: 'Fev', total: 52000 },
-  { name: 'Mar', total: 61000 },
-  { name: 'Abr', total: 59000 },
-  { name: 'Mai', total: 72000 },
-  { name: 'Jun', total: 85000 },
-];
-
-const leadsSource = [
-  { name: 'Instagram', value: 40 },
-  { name: 'Google Ads', value: 35 },
-  { name: 'Indicação', value: 15 },
-  { name: 'Orgânico', value: 10 },
-];
 const COLORS = ['#FF6B00', '#0066FF', '#0033CC', '#64748b'];
 
-const stats = [
-  { name: 'Faturamento', value: 'R$ 85.000', change: '+12%', trend: 'up', icon: DollarSign, color: 'text-emerald-500', bg: 'bg-emerald-100 dark:bg-emerald-500/20' },
-  { name: 'Lucro Líquido', value: 'R$ 42.500', change: '+8%', trend: 'up', icon: ArrowUpRight, color: 'text-raon-blue', bg: 'bg-blue-100 dark:bg-blue-500/20' },
-  { name: 'Clientes Ativos', value: '124', change: '+15', trend: 'up', icon: Users, color: 'text-raon-orange', bg: 'bg-orange-100 dark:bg-orange-500/20' },
-  { name: 'Leads Ativos', value: '45', change: '-2', trend: 'down', icon: Target, color: 'text-slate-500', bg: 'bg-slate-100 dark:bg-slate-500/20' },
-  { name: 'Gastos', value: 'R$ 42.500', change: '+2%', trend: 'up', icon: ArrowDownRight, color: 'text-red-500', bg: 'bg-red-100 dark:bg-red-500/20' },
-  { name: 'Propostas Enviadas', value: '28', change: '+5', trend: 'up', icon: FileCheck, color: 'text-indigo-500', bg: 'bg-indigo-100 dark:bg-indigo-500/20' },
-  { name: 'Projetos Ativos', value: '18', change: '0', trend: 'neutral', icon: Briefcase, color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-500/20' },
-  { name: 'Tarefas Pendentes', value: '32', change: '-5', trend: 'up', icon: CheckCircle2, color: 'text-amber-500', bg: 'bg-amber-100 dark:bg-amber-500/20' },
-];
-
 export default function Dashboard() {
+  const { clients, transactions, crmData, projectData } = useAppContext();
+
+  const totalReceitas = transactions.filter(t => t.tipo === 'receita').reduce((a, c) => a + c.valor, 0);
+  const totalDespesas = transactions.filter(t => t.tipo === 'despesa').reduce((a, c) => a + c.valor, 0);
+  const lucro = totalReceitas - totalDespesas;
+  const ativos = clients.filter(c => c.status === 'Ativo').length;
+  const leadsTotais = Object.keys(crmData.leads).length;
+  const propostas = crmData.columns['col-3']?.leadIds?.length || 0;
+  const projetosTotais = Object.keys(projectData.projects).length;
+
+  const stats = [
+    { name: 'Faturamento', value: `R$ ${totalReceitas.toLocaleString('pt-BR')}`, change: '', trend: 'neutral', icon: DollarSign, color: 'text-emerald-500', bg: 'bg-emerald-100 dark:bg-emerald-500/20' },
+    { name: 'Lucro Líquido', value: `R$ ${lucro.toLocaleString('pt-BR')}`, change: '', trend: 'neutral', icon: ArrowUpRight, color: 'text-raon-blue', bg: 'bg-blue-100 dark:bg-blue-500/20' },
+    { name: 'Clientes Ativos', value: ativos.toString(), change: '', trend: 'neutral', icon: Users, color: 'text-raon-orange', bg: 'bg-orange-100 dark:bg-orange-500/20' },
+    { name: 'Leads Ativos', value: leadsTotais.toString(), change: '', trend: 'neutral', icon: Target, color: 'text-slate-500', bg: 'bg-slate-100 dark:bg-slate-500/20' },
+    { name: 'Gastos', value: `R$ ${totalDespesas.toLocaleString('pt-BR')}`, change: '', trend: 'neutral', icon: ArrowDownRight, color: 'text-red-500', bg: 'bg-red-100 dark:bg-red-500/20' },
+    { name: 'Propostas Enviadas', value: propostas.toString(), change: '', trend: 'neutral', icon: FileCheck, color: 'text-indigo-500', bg: 'bg-indigo-100 dark:bg-indigo-500/20' },
+    { name: 'Projetos Ativos', value: projetosTotais.toString(), change: '', trend: 'neutral', icon: Briefcase, color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-500/20' },
+    { name: 'Tarefas Pendentes', value: '0', change: '', trend: 'neutral', icon: CheckCircle2, color: 'text-amber-500', bg: 'bg-amber-100 dark:bg-amber-500/20' },
+  ];
+
+  const revenueData = [
+    { name: 'Atual', total: totalReceitas }
+  ];
+
+  let leadsSource = [
+    { name: 'Instagram', value: 0 },
+    { name: 'Google Ads', value: 0 },
+    { name: 'Indicação', value: 0 },
+    { name: 'Orgânico', value: 0 },
+  ];
+
+  const hasLeads = Object.keys(crmData.leads).length > 0;
+  if (!hasLeads) {
+     leadsSource = [ { name: 'Sem dados', value: 1 } ];
+  }
   return (
     <div className="space-y-6 animate-fade-in pb-10">
       <div>
@@ -131,36 +142,35 @@ export default function Dashboard() {
         <div className="glass rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-800">
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Avisos e Atrasos</h3>
           <div className="space-y-4">
-            <div className="flex items-start p-3 bg-red-50 dark:bg-red-900/10 border-l-4 border-red-500 rounded-r-lg">
-              <AlertCircle className="h-5 w-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-medium text-red-800 dark:text-red-200">Projeto "Site e-commerce" atrasado</p>
-                <p className="text-xs text-red-600 dark:text-red-300 mt-1">Prazo era 15/Jun. Responsável: João.</p>
+            {transactions.some(t => t.status === 'Pendente') ? (
+              <div className="flex items-start p-3 bg-amber-50 dark:bg-amber-900/10 border-l-4 border-amber-500 rounded-r-lg">
+                <AlertCircle className="h-5 w-5 text-amber-500 mr-3 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Existem Faturas Pendentes</p>
+                  <p className="text-xs text-amber-600 dark:text-amber-300 mt-1">Verifique o módulo de financeiro.</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-start p-3 bg-amber-50 dark:bg-amber-900/10 border-l-4 border-amber-500 rounded-r-lg">
-              <AlertCircle className="h-5 w-5 text-amber-500 mr-3 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">3 Faturas a Vencer Hoje</p>
-                <p className="text-xs text-amber-600 dark:text-amber-300 mt-1">Total acumulado: R$ 8.500,00.</p>
-              </div>
-            </div>
+            ) : (
+              <p className="text-sm text-slate-500">Nenhum aviso no momento.</p>
+            )}
           </div>
         </div>
         
         <div className="glass rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-800">
           <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4">Atividade Recente</h3>
           <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center gap-4">
+            {clients.slice(0, 3).map((client, i) => (
+              <div key={client.id} className="flex items-center gap-4">
                 <div className="w-2 h-2 rounded-full bg-raon-blue" />
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">Novo contrato fechado</p>
-                  <p className="text-xs text-slate-500">Cliente {i} assinou plano Ouro.</p>
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">Novo cliente fechado</p>
+                  <p className="text-xs text-slate-500">{client.name} - {client.plan}</p>
                 </div>
-                <span className="text-xs text-slate-400 font-mono">Há {i*2}h</span>
               </div>
             ))}
+            {clients.length === 0 && (
+              <p className="text-sm text-slate-500">Nenhuma atividade recente.</p>
+            )}
           </div>
         </div>
       </div>

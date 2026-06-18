@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AppProvider } from './context/AppContext';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import Dashboard from './pages/Dashboard';
@@ -9,11 +10,8 @@ import Projects from './pages/Projects';
 import IA from './pages/IA';
 import Support from './pages/Support';
 import Marketing from './pages/Marketing';
-import Automation from './pages/Automation';
-import Google from './pages/Google';
 import Executive from './pages/Executive';
 import Team from './pages/Team';
-import Workspace from './pages/Workspace';
 
 function Layout() {
   return (
@@ -32,11 +30,8 @@ function Layout() {
             <Route path="/ia" element={<IA />} />
             <Route path="/support" element={<Support />} />
             <Route path="/marketing" element={<Marketing />} />
-            <Route path="/automation" element={<Automation />} />
-            <Route path="/google" element={<Google />} />
             <Route path="/executive" element={<Executive />} />
             <Route path="/team" element={<Team />} />
-            <Route path="/workspace" element={<Workspace />} />
           </Routes>
         </main>
       </div>
@@ -46,8 +41,10 @@ function Layout() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Layout />
-    </BrowserRouter>
+    <AppProvider>
+      <BrowserRouter>
+        <Layout />
+      </BrowserRouter>
+    </AppProvider>
   );
 }

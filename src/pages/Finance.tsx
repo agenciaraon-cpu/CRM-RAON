@@ -1,29 +1,10 @@
-import { DollarSign, TrendingUp, TrendingDown, CreditCard, Download, Plus, X } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, CreditCard, Download, Plus, X, Trash } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { useState } from 'react';
-
-const dataDRE = [
-  { name: 'Jan', receitas: 45000, despesas: 25000, lucro: 20000 },
-  { name: 'Fev', receitas: 52000, despesas: 27000, lucro: 25000 },
-  { name: 'Mar', receitas: 61000, despesas: 30000, lucro: 31000 },
-  { name: 'Abr', receitas: 59000, despesas: 29000, lucro: 30000 },
-  { name: 'Mai', receitas: 72000, despesas: 35000, lucro: 37000 },
-  { name: 'Jun', receitas: 85000, despesas: 42500, lucro: 42500 },
-];
-
-const initialTransactions = [
-  { id: 1, descricao: 'Projetos e Sites', categoria: 'Serviços', valor: 68500, tipo: 'receita', data: '15/06/2026', status: 'Pago' },
-  { id: 2, descricao: 'Mensalidade Tech Nova', categoria: 'Mensalidades', valor: 5000, tipo: 'receita', data: '15/06/2026', status: 'Pago' },
-  { id: 3, descricao: 'Consultoria Estratégica JC', categoria: 'Consultorias', valor: 8000, tipo: 'receita', data: '05/06/2026', status: 'Pago' },
-  { id: 4, descricao: 'Sinal 50% Site Studio', categoria: 'Sites', valor: 3500, tipo: 'receita', data: '12/06/2026', status: 'Pago' },
-  { id: 5, descricao: 'Folha de Pagamento', categoria: 'Equipe', valor: 30000, tipo: 'despesa', data: '05/06/2026', status: 'Pago' },
-  { id: 6, descricao: 'Impostos e Taxas', categoria: 'Impostos', valor: 8800, tipo: 'despesa', data: '10/06/2026', status: 'Pago' },
-  { id: 7, descricao: 'Google Ads (Agência)', categoria: 'Anúncios', valor: 2500, tipo: 'despesa', data: '14/06/2026', status: 'Pago' },
-  { id: 8, descricao: 'Licença HubSpot / Ferramentas', categoria: 'Ferramentas', valor: 1200, tipo: 'despesa', data: '10/06/2026', status: 'Pendente' },
-];
+import { useAppContext } from '../context/AppContext';
 
 export default function Finance() {
-  const [transacoes, setTransacoes] = useState(initialTransactions);
+  const { transactions, addTransaction, removeTransaction } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -55,20 +36,25 @@ export default function Finance() {
       descricao: formData.descricao,
       categoria: formData.categoria,
       valor: isNaN(valorNumerico) ? 0 : valorNumerico,
-      tipo: formData.tipo,
+      tipo: formData.tipo as 'receita' | 'despesa',
       data: formattedDate || '--/--/----',
       status: 'Pago',
     };
     
-    setTransacoes([newTransaction, ...transacoes]);
+    addTransaction(newTransaction);
     setIsModalOpen(false);
     setFormData({ tipo: 'receita', descricao: '', categoria: '', data: '', valor: '' });
   };
 
-  const totalReceitas = transacoes.filter(t => t.tipo === 'receita').reduce((acc, curr) => acc + curr.valor, 0);
-  const totalDespesas = transacoes.filter(t => t.tipo === 'despesa').reduce((acc, curr) => acc + curr.valor, 0);
+  const totalReceitas = transactions.filter(t => t.tipo === 'receita').reduce((acc, curr) => acc + curr.valor, 0);
+  const totalDespesas = transactions.filter(t => t.tipo === 'despesa').reduce((acc, curr) => acc + curr.valor, 0);
   const lucroLiquido = totalReceitas - totalDespesas;
   const margemLucro = totalReceitas > 0 ? ((lucroLiquido / totalReceitas) * 100).toFixed(1) : 0;
+  
+  // Calculate generic DRE from transactions
+  const dataDRE = [
+    { name: 'Atual', receitas: totalReceitas, despesas: totalDespesas, lucro: lucroLiquido }
+  ];
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
@@ -175,11 +161,12 @@ export default function Finance() {
                   <th className="px-6 py-3 font-medium">Categoria</th>
                   <th className="px-6 py-3 font-medium">Data</th>
                   <th className="px-6 py-3 font-medium text-right">Valor</th>
+                  <th className="px-6 py-3 font-medium text-right">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-700/50">
-                {transacoes.map((t) => (
-                  <tr key={t.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                {transactions.map((t) => (
+                  <tr key={t.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
                     <td className="px-6 py-4">
                       <p className="font-semibold text-slate-900 dark:text-white">{t.descricao}</p>
                       <p className="text-xs text-slate-500">{t.status}</p>
@@ -192,6 +179,14 @@ export default function Finance() {
                     <td className="px-6 py-4 text-slate-500 dark:text-slate-400">{t.data}</td>
                     <td className={`px-6 py-4 text-right font-bold ${t.tipo === 'receita' ? 'text-emerald-500' : 'text-red-500'}`}>
                       {t.tipo === 'receita' ? '+' : '-'} R$ {t.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button 
+                        onClick={() => removeTransaction(t.id)}
+                        className="text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash className="h-5 w-5" />
+                      </button>
                     </td>
                   </tr>
                 ))}

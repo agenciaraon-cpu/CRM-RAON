@@ -1,38 +1,15 @@
 import { useState, useMemo } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { Plus, MoreHorizontal, Calendar, Paperclip, MessageSquare, CheckSquare, X, AlertCircle } from 'lucide-react';
-
-const initialData = {
-  columns: {
-    'col-1': { id: 'col-1', title: 'Briefing', projectIds: ['proj-1'] },
-    'col-2': { id: 'col-2', title: 'Planejamento', projectIds: ['proj-2'] },
-    'col-3': { id: 'col-3', title: 'Produção', projectIds: ['proj-3', 'proj-4'] },
-    'col-4': { id: 'col-4', title: 'Revisão', projectIds: [] },
-    'col-5': { id: 'col-5', title: 'Aprovação', projectIds: [] },
-    'col-6': { id: 'col-6', title: 'Entrega', projectIds: [] },
-  },
-  projects: {
-    'proj-1': { id: 'proj-1', name: 'Site Institucional', client: 'Tech Nova S.A.', date: '15/Jun', attachments: 3, comments: 2, tasks: '2/5', priority: 'Alta' },
-    'proj-2': { id: 'proj-2', name: 'Gestão de Tráfego', client: 'Studio Beauty', date: '20/Jun', attachments: 0, comments: 5, tasks: '4/4', priority: 'Média' },
-    'proj-3': { id: 'proj-3', name: 'Identidade Visual', client: 'Engenharia RS', date: '10/Jun', attachments: 12, comments: 8, tasks: '1/8', priority: 'Urgente' },
-    'proj-4': { id: 'proj-4', name: 'App Mobile', client: 'Consultoria JC', date: '30/Ago', attachments: 1, comments: 1, tasks: '0/12', priority: 'Baixa' },
-  },
-  columnOrder: ['col-1', 'col-2', 'col-3', 'col-4', 'col-5', 'col-6'],
-};
-
-const registeredClients = [
-  'Tech Nova S.A.',
-  'Studio Beauty',
-  'Engenharia RS',
-  'Consultoria JC',
-  'Outro...'
-];
+import { Plus, MoreHorizontal, Calendar, Paperclip, MessageSquare, CheckSquare, X, AlertCircle, Trash } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
 
 export default function Projects() {
-  const [data, setData] = useState(initialData);
+  const { projectData: data, setProjectData: setData, clients, removeProject } = useAppContext();
+  const registeredClients = clients.map(c => c.name).concat('Outro...');
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    client: registeredClients[0],
+    client: registeredClients[0] || 'Outro...',
     customClient: '',
     service: '',
     priority: 'Média',
@@ -224,8 +201,11 @@ export default function Projects() {
                                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${getPriorityColor(project.priority)}`}>
                                     {project.priority}
                                   </span>
-                                  <button className="text-slate-400 hover:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <MoreHorizontal className="h-4 w-4" />
+                                  <button 
+                                    onClick={() => removeProject(project.id, column.id)}
+                                    className="text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    <Trash className="h-4 w-4" />
                                   </button>
                                 </div>
                                 <h4 className="font-semibold text-slate-900 dark:text-white leading-tight mt-2">{project.name}</h4>

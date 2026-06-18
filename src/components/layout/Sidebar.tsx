@@ -24,12 +24,9 @@ const navigation = [
   { name: 'Projetos', to: '/projects', icon: Briefcase },
   { name: 'Atendimento', to: '/support', icon: Headset },
   { name: 'Marketing', to: '/marketing', icon: Megaphone },
-  { name: 'Automação', to: '/automation', icon: Workflow },
   { name: 'RAON IA', to: '/ia', icon: Bot },
-  { name: 'Google & SEO', to: '/google', icon: Search },
   { name: 'Executivo', to: '/executive', icon: TrendingUp },
   { name: 'Equipe', to: '/team', icon: Users2 },
-  { name: 'Workspace', to: '/workspace', icon: Laptop },
 ];
 
 export default function Sidebar() {

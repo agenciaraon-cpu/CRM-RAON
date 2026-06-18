@@ -1,23 +1,32 @@
 import { TrendingUp, Users, DollarSign, Target, ArrowUpRight, BarChart3, PieChart as PieChartIcon } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-
-const growthData = [
-  { name: 'Jan', value: 30000 },
-  { name: 'Fev', value: 45000 },
-  { name: 'Mar', value: 50000 },
-  { name: 'Abr', value: 65000 },
-  { name: 'Mai', value: 72000 },
-  { name: 'Jun', value: 85000 },
-];
-
-const COLORS = ['#FF6B00', '#0066FF', '#0033CC'];
-const pieData = [
-  { name: 'Retenção', value: 60 },
-  { name: 'Novos', value: 30 },
-  { name: 'Upsell', value: 10 },
-];
+import { useAppContext } from '../context/AppContext';
 
 export default function Executive() {
+  const { clients, transactions } = useAppContext();
+  
+  const totalReceitas = transactions.filter(t => t.tipo === 'receita').reduce((a, c) => a + c.valor, 0);
+  const arr = totalReceitas * 12;
+  const ativos = clients.filter(c => c.status === 'Ativo').length;
+  const ticketMedio = ativos > 0 ? totalReceitas / ativos : 0;
+  
+  const growthData = [
+    { name: 'Atual', value: totalReceitas }
+  ];
+
+  const COLORS = ['#FF6B00', '#0066FF', '#0033CC'];
+  let pieData = [
+    { name: 'Nenhum dado', value: 1 }
+  ];
+  
+  if (totalReceitas > 0) {
+    pieData = [
+      { name: 'Mensalidades', value: 60 },
+      { name: 'Serviços', value: 30 },
+      { name: 'Consultorias', value: 10 },
+    ];
+  }
+
   return (
     <div className="space-y-6 animate-fade-in pb-10">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
@@ -38,7 +47,9 @@ export default function Executive() {
             </span>
           </div>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Receita Anualizada (ARR)</p>
-          <p className="text-3xl font-bold text-slate-900 dark:text-white">R$ 1.02M</p>
+          <p className="text-3xl font-bold text-slate-900 dark:text-white">
+            R$ {arr >= 1000 ? `${(arr / 1000).toFixed(1)}k` : arr.toLocaleString('pt-BR')}
+          </p>
         </div>
 
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
@@ -46,12 +57,14 @@ export default function Executive() {
             <div className="h-10 w-10 bg-orange-100 dark:bg-orange-900/30 text-raon-orange rounded-lg flex items-center justify-center">
               <Target className="h-5 w-5" />
             </div>
-            <span className="text-xs font-bold text-emerald-500 bg-emerald-100 dark:bg-emerald-500/10 px-2 py-1 rounded flex items-center">
-              +5% <ArrowUpRight className="h-3 w-3 ml-1" />
+            <span className="text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded flex items-center">
+              --
             </span>
           </div>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Ticket Médio (MRR)</p>
-          <p className="text-3xl font-bold text-slate-900 dark:text-white">R$ 3.450</p>
+          <p className="text-3xl font-bold text-slate-900 dark:text-white">
+            R$ {ticketMedio.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}
+          </p>
         </div>
 
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
@@ -59,12 +72,12 @@ export default function Executive() {
             <div className="h-10 w-10 bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-lg flex items-center justify-center">
               <TrendingUp className="h-5 w-5" />
             </div>
-            <span className="text-xs font-bold text-emerald-500 bg-emerald-100 dark:bg-emerald-500/10 px-2 py-1 rounded flex items-center">
-              +2.1% <ArrowUpRight className="h-3 w-3 ml-1" />
+            <span className="text-xs font-bold text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded flex items-center">
+              --
             </span>
           </div>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Taxa de Conversão</p>
-          <p className="text-3xl font-bold text-slate-900 dark:text-white">18.5%</p>
+          <p className="text-3xl font-bold text-slate-900 dark:text-white">0%</p>
         </div>
 
         <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-6 rounded-xl border border-slate-700 shadow-lg text-white">
@@ -74,7 +87,7 @@ export default function Executive() {
             </div>
           </div>
           <p className="text-sm font-medium text-slate-300 mb-1">LTV (Life Time Value)</p>
-          <p className="text-3xl font-bold text-white">R$ 28.500</p>
+          <p className="text-3xl font-bold text-white">R$ 0</p>
         </div>
       </div>
 

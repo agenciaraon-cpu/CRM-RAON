@@ -1,13 +1,6 @@
-import { Building2, Search, Filter, MoreVertical, Plus, X } from 'lucide-react';
+import { Building2, Search, Filter, MoreVertical, Plus, X, Trash } from 'lucide-react';
 import { useState } from 'react';
-
-const initialClients = [
-  { id: 1, name: 'Tech Nova S.A.', plan: 'Plano Enterprise', status: 'Ativo', owner: 'Carlos Admin', value: 'R$ 5.000', dueDate: '15/06/2026' },
-  { id: 2, name: 'Studio Beauty', plan: 'Gestão de Mídias', status: 'Em implantação', owner: 'Ana Marketing', value: 'R$ 2.500', dueDate: '20/06/2026' },
-  { id: 3, name: 'Engenharia RS', plan: 'Tráfego Pago + SEO', status: 'Ativo', owner: 'Roberto Sales', value: 'R$ 15.000', dueDate: '10/06/2026' },
-  { id: 4, name: 'Consultoria JC', plan: 'Consultoria Estratégica', status: 'Pausado', owner: 'Carlos Admin', value: 'R$ 8.000', dueDate: '05/06/2026' },
-  { id: 5, name: 'Mercado Local', plan: 'Site Institucional', status: 'Cancelado', owner: 'João Dev', value: 'R$ 1.500', dueDate: '01/06/2026' },
-];
+import { useAppContext } from '../context/AppContext';
 
 const getStatusColor = (status: string) => {
   switch(status) {
@@ -21,7 +14,7 @@ const getStatusColor = (status: string) => {
 }
 
 export default function Clients() {
-  const [clients, setClients] = useState(initialClients);
+  const { clients, addClient, removeClient } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -47,17 +40,19 @@ export default function Clients() {
       formattedDate = `${day}/${month}/${year}`;
     }
 
+    const finalValue = parseFloat(formData.value.replace(',', '.')) || 0;
+
     const newClient = {
       id: Date.now(),
       name: formData.name,
       plan: formData.plan,
       status: formData.status,
       owner: formData.owner,
-      value: `R$ ${formData.value}`, // Format string simplistically
-      dueDate: formattedDate || '--/--/----',
+      value: finalValue,
+      dueDate: formData.dueDate || new Date().toISOString().split('T')[0],
     };
     
-    setClients([newClient, ...clients]);
+    addClient(newClient);
     setIsModalOpen(false);
     setFormData({ name: '', plan: 'Prata', status: 'Ativo', owner: '', value: '', dueDate: '' });
   };
@@ -123,11 +118,16 @@ export default function Clients() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{client.owner}</td>
-                  <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{client.value}</td>
-                  <td className="px-6 py-4 text-slate-500">{client.dueDate}</td>
+                  <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
+                    R$ {client.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </td>
+                  <td className="px-6 py-4 text-slate-500">{client.dueDate.split('-').reverse().join('/')}</td>
                   <td className="px-6 py-4 text-right">
-                    <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors opacity-0 group-hover:opacity-100">
-                      <MoreVertical className="h-5 w-5" />
+                    <button 
+                      onClick={() => removeClient(client.id)}
+                      className="text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                    >
+                      <Trash className="h-5 w-5" />
                     </button>
                   </td>
                 </tr>
