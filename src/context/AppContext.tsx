@@ -1,4 +1,19 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
+import {
+  collection,
+  doc,
+  onSnapshot,
+  setDoc,
+  deleteDoc,
+  getDoc,
+} from "firebase/firestore";
+import { db } from "../lib/firebase";
 
 export interface Client {
   id: number;
@@ -103,75 +118,143 @@ const AppContext = createContext<AppState | undefined>(undefined);
 export function AppProvider({ children }: { children: ReactNode }) {
   const [clients, setClients] = useState<Client[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [crmData, setCrmData] = useState(initialCrmData);
-  const [projectData, setProjectData] = useState(initialProjectData);
+  const [crmData, setCrmDataState] = useState(initialCrmData);
+  const [projectData, setProjectDataState] = useState(initialProjectData);
 
   const [tickets, setTickets] = useState<any[]>([]);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [team, setTeam] = useState<any[]>([]);
 
-  const addTicket = (ticket: any) => setTickets((prev) => [ticket, ...prev]);
-  const removeTicket = (id: number) =>
-    setTickets((prev) => prev.filter((t) => t.id !== id));
-
-  const addCampaign = (campaign: any) =>
-    setCampaigns((prev) => [campaign, ...prev]);
-  const removeCampaign = (id: number) =>
-    setCampaigns((prev) => prev.filter((c) => c.id !== id));
-
-  const addTeamMember = (member: any) => setTeam((prev) => [member, ...prev]);
-  const removeTeamMember = (id: number) =>
-    setTeam((prev) => prev.filter((m) => m.id !== id));
-
-  const removeClient = (id: number) => {
-    setClients((prev) => prev.filter((c) => c.id !== id));
-  };
-
-  const removeTransaction = (id: number) => {
-    setTransactions((prev) => prev.filter((t) => t.id !== id));
-  };
-
-  const removeLead = (id: string, colId: string) => {
-    setCrmData((prev: any) => {
-      const newLeads = { ...prev.leads };
-      delete newLeads[id];
-      const newColumn = {
-        ...prev.columns[colId],
-        leadIds: prev.columns[colId].leadIds.filter(
-          (lId: string) => lId !== id,
-        ),
-      };
-      return {
-        ...prev,
-        leads: newLeads,
-        columns: { ...prev.columns, [colId]: newColumn },
-      };
+  useEffect(() => {
+    const unsubClients = onSnapshot(collection(db, "clients"), (snapshot) => {
+      setClients(snapshot.docs.map((doc) => doc.data() as Client));
     });
-  };
-
-  const removeProject = (id: string, colId: string) => {
-    setProjectData((prev: any) => {
-      const newProjects = { ...prev.projects };
-      delete newProjects[id];
-      const newColumn = {
-        ...prev.columns[colId],
-        projectIds: prev.columns[colId].projectIds.filter(
-          (pId: string) => pId !== id,
-        ),
-      };
-      return {
-        ...prev,
-        projects: newProjects,
-        columns: { ...prev.columns, [colId]: newColumn },
-      };
+    const unsubTransactions = onSnapshot(
+      collection(db, "transactions"),
+      (snapshot) => {
+        setTransactions(snapshot.docs.map((doc) => doc.data() as Transaction));
+      },
+    );
+    const unsubTickets = onSnapshot(collection(db, "tickets"), (snapshot) => {
+      setTickets(snapshot.docs.map((doc) => doc.data()));
     });
+    const unsubCampaigns = onSnapshot(
+      collection(db, "campaigns"),
+      (snapshot) => {
+        setCampaigns(snapshot.docs.map((doc) => doc.data()));
+      },
+    );
+    const unsubTeam = onSnapshot(collection(db, "team"), (snapshot) => {
+      setTeam(snapshot.docs.map((doc) => doc.data()));
+    });
+
+    const unsubCrm = onSnapshot(doc(db, "boardConfig", "crm"), (doc) => {
+      if (doc.exists()) {
+        setCrmDataState(doc.data() as any);
+      } else {
+        setDoc(doc.ref, initialCrmData);
+      }
+    });
+
+    const unsubProject = onSnapshot(
+      doc(db, "boardConfig", "projects"),
+      (doc) => {
+        if (doc.exists()) {
+          setProjectDataState(doc.data() as any);
+        } else {
+          setDoc(doc.ref, initialProjectData);
+        }
+      },
+    );
+
+    return () => {
+      unsubClients();
+      unsubTransactions();
+      unsubTickets();
+      unsubCampaigns();
+      unsubTeam();
+      unsubCrm();
+      unsubProject();
+    };
+  }, []);
+
+  const addTicket = async (ticket: any) => {
+    await setDoc(doc(db, "tickets", ticket.id.toString()), ticket);
+  };
+  const removeTicket = async (id: number) => {
+    await deleteDoc(doc(db, "tickets", id.toString()));
   };
 
-  const addClient = (client: Client) => {
-    setClients((prev) => [client, ...prev]);
+  const addCampaign = async (campaign: any) => {
+    await setDoc(doc(db, "campaigns", campaign.id.toString()), campaign);
+  };
+  const removeCampaign = async (id: number) => {
+    await deleteDoc(doc(db, "campaigns", id.toString()));
+  };
+
+  const addTeamMember = async (member: any) => {
+    await setDoc(doc(db, "team", member.id.toString()), member);
+  };
+  const removeTeamMember = async (id: number) => {
+    await deleteDoc(doc(db, "team", id.toString()));
+  };
+
+  const removeClient = async (id: number) => {
+    await deleteDoc(doc(db, "clients", id.toString()));
+  };
+
+  const removeTransaction = async (id: number) => {
+    await deleteDoc(doc(db, "transactions", id.toString()));
+  };
+
+  const setCrmData = async (data: any) => {
+    await setDoc(doc(db, "boardConfig", "crm"), data);
+  };
+
+  const removeLead = async (id: string, colId: string) => {
+    const newLeads = { ...crmData.leads };
+    delete newLeads[id];
+    const newColumn = {
+      ...crmData.columns[colId],
+      leadIds: crmData.columns[colId].leadIds.filter(
+        (lId: string) => lId !== id,
+      ),
+    };
+    const newData = {
+      ...crmData,
+      leads: newLeads,
+      columns: { ...crmData.columns, [colId]: newColumn },
+    };
+    await setCrmData(newData);
+  };
+
+  const setProjectData = async (data: any) => {
+    await setDoc(doc(db, "boardConfig", "projects"), data);
+  };
+
+  const removeProject = async (id: string, colId: string) => {
+    const newProjects = { ...projectData.projects };
+    delete newProjects[id];
+    const newColumn = {
+      ...projectData.columns[colId],
+      projectIds: projectData.columns[colId].projectIds.filter(
+        (pId: string) => pId !== id,
+      ),
+    };
+    const newData = {
+      ...projectData,
+      projects: newProjects,
+      columns: { ...projectData.columns, [colId]: newColumn },
+    };
+    await setProjectData(newData);
+  };
+
+  const addClient = async (client: Client) => {
+    await setDoc(doc(db, "clients", client.id.toString()), client);
     // Automatically add billing transaction for the new client
+    const transactionId = Date.now();
     addTransaction({
-      id: Date.now(),
+      id: transactionId,
       descricao: `Mensalidade - ${client.name}`,
       categoria: "Mensalidades",
       valor: client.value,
@@ -181,8 +264,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const addTransaction = (t: Transaction) => {
-    setTransactions((prev) => [t, ...prev]);
+  const addTransaction = async (t: Transaction) => {
+    await setDoc(doc(db, "transactions", t.id.toString()), t);
   };
 
   return (

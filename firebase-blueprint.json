@@ -1,0 +1,130 @@
+{
+  "collections": [
+    {
+      "name": "clients",
+      "properties": {
+        "name": "string",
+        "plan": "string",
+        "status": "string",
+        "owner": "string",
+        "value": "number",
+        "dueDate": "string",
+        "createdAt": "timestamp"
+      },
+      "securityRules": {
+        "read": "true",
+        "write": "true"
+      }
+    },
+    {
+      "name": "transactions",
+      "properties": {
+        "descricao": "string",
+        "categoria": "string",
+        "valor": "number",
+        "tipo": "string",
+        "data": "string",
+        "status": "string",
+        "createdAt": "timestamp"
+      },
+      "securityRules": {
+        "read": "true",
+        "write": "true"
+      }
+    },
+    {
+      "name": "leads",
+      "properties": {
+        "name": "string",
+        "company": "string",
+        "phone": "string",
+        "email": "string",
+        "tags": "array",
+        "value": "string",
+        "createdAt": "timestamp"
+      },
+      "securityRules": {
+        "read": "true",
+        "write": "true"
+      }
+    },
+    {
+      "name": "boardConfig",
+      "properties": {
+        "type": "string",
+        "columns": "map",
+        "columnOrder": "array",
+        "updatedAt": "timestamp"
+      },
+      "securityRules": {
+        "read": "true",
+        "write": "true"
+      }
+    },
+    {
+      "name": "projects",
+      "properties": {
+        "name": "string",
+        "client": "string",
+        "date": "string",
+        "attachments": "number",
+        "comments": "number",
+        "tasks": "string",
+        "priority": "string",
+        "createdAt": "timestamp"
+      },
+      "securityRules": {
+        "read": "true",
+        "write": "true"
+      }
+    },
+    {
+      "name": "tickets",
+      "properties": {
+        "title": "string",
+        "client": "string",
+        "priority": "string",
+        "status": "string",
+        "date": "string",
+        "agent": "string",
+        "createdAt": "timestamp"
+      },
+      "securityRules": {
+        "read": "true",
+        "write": "true"
+      }
+    },
+    {
+      "name": "campaigns",
+      "properties": {
+        "platform": "string",
+        "name": "string",
+        "status": "string",
+        "budget": "string",
+        "spent": "string",
+        "roi": "string",
+        "metrics": "map",
+        "createdAt": "timestamp"
+      },
+      "securityRules": {
+        "read": "true",
+        "write": "true"
+      }
+    },
+    {
+      "name": "team",
+      "properties": {
+        "name": "string",
+        "role": "string",
+        "email": "string",
+        "phone": "string",
+        "avatar": "string",
+        "createdAt": "timestamp"
+      },
+      "securityRules": {
+        "read": "true",
+        "write": "true"
+      }
+    }
+  ]
+}

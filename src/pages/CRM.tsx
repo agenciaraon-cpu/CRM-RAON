@@ -47,7 +47,7 @@ export default function CRM() {
     <div className="h-[calc(100vh-8rem)] flex flex-col animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Pipeline de Vendas</h2>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">CRM RAON</h2>
           <p className="text-slate-500 dark:text-slate-400">Acompanhe e gerencie seus leads em tempo real.</p>
         </div>
         <button className="flex items-center gap-2 bg-raon-blue hover:bg-raon-dark text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-lg shadow-raon-blue/20">

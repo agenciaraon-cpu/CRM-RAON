@@ -18,7 +18,7 @@ import { cn } from '../../lib/utils';
 
 const navigation = [
   { name: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
-  { name: 'CRM Kanban', to: '/crm', icon: Target },
+  { name: 'CRM RAON', to: '/crm', icon: Target },
   { name: 'Clientes', to: '/clients', icon: Users },
   { name: 'Financeiro', to: '/finance', icon: Wallet },
   { name: 'Projetos', to: '/projects', icon: Briefcase },
@@ -34,7 +34,7 @@ export default function Sidebar() {
     <div className="hidden md:flex flex-col w-64 bg-raon-dark text-white shadow-xl flex-shrink-0 relative z-20">
       <div className="flex items-center justify-center h-20 border-b border-white/10 px-6">
         <div className="flex flex-col items-center justify-center">
-          <img src="/raon.png" alt="RAON CRM" className="max-h-12 w-auto object-contain" />
+          <img src="/raon.png.png" alt="RAON CRM" className="max-h-12 w-auto object-contain" />
         </div>
       </div>
       
