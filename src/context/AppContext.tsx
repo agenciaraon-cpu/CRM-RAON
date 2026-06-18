@@ -14,6 +14,7 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { db, auth } from "../lib/firebase";
+import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 
 export interface Client {
@@ -44,6 +45,9 @@ export interface Lead {
   email: string;
   tags: string[];
   value: string;
+  cityState?: string;
+  service?: string;
+  plan?: string;
 }
 
 export interface Project {
@@ -90,7 +94,7 @@ interface AppState {
 
 const initialCrmData = {
   columns: {
-    "col-1": { id: "col-1", title: "Novo Lead", leadIds: [] },
+    "col-1": { id: "col-1", title: "Novo Contato", leadIds: [] },
     "col-2": { id: "col-2", title: "Contato Realizado", leadIds: [] },
     "col-3": { id: "col-3", title: "Proposta Enviada", leadIds: [] },
     "col-4": { id: "col-4", title: "Negociação", leadIds: [] },
@@ -125,6 +129,39 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [tickets, setTickets] = useState<any[]>([]);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [team, setTeam] = useState<any[]>([]);
+
+  const [user] = useAuthState(auth);
+
+  const requireAdmin = async () => {
+    let currentUser = user;
+    if (!currentUser) {
+      try {
+        const provider = new GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: "select_account" });
+        const result = await signInWithPopup(auth, provider);
+        currentUser = result.user as any;
+      } catch (err: any) {
+        if (
+          err.code !== "auth/popup-closed-by-user" &&
+          err.code !== "auth/cancelled-popup-request"
+        ) {
+          alert("Erro ao fazer login com Google. Tente novamente.");
+        }
+        return false;
+      }
+    }
+
+    if (
+      currentUser?.email !== "storearca7@gmail.com" &&
+      currentUser?.email !== "agenciaraon@gmail.com"
+    ) {
+      alert(
+        "Acesso Restrito: Apenas administradores podem realizar alterações.",
+      );
+      return false;
+    }
+    return true;
+  };
 
   useEffect(() => {
     const unsubClients = onSnapshot(collection(db, "clients"), (snapshot) => {
@@ -179,58 +216,50 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const requireAdmin = () => {
-    if (user?.email !== "agenciaraon@gmail.com") {
-      alert("Acesso Restrito: Apenas administradores (agenciaraon@gmail.com) podem realizar alterações.");
-      return false;
-    }
-    return true;
-  };
-
   const addTicket = async (ticket: any) => {
-    if (!requireAdmin()) return;
+    if (!(await requireAdmin())) return;
     await setDoc(doc(db, "tickets", ticket.id.toString()), ticket);
   };
   const removeTicket = async (id: number) => {
-    if (!requireAdmin()) return;
+    if (!(await requireAdmin())) return;
     await deleteDoc(doc(db, "tickets", id.toString()));
   };
 
   const addCampaign = async (campaign: any) => {
-    if (!requireAdmin()) return;
+    if (!(await requireAdmin())) return;
     await setDoc(doc(db, "campaigns", campaign.id.toString()), campaign);
   };
   const removeCampaign = async (id: number) => {
-    if (!requireAdmin()) return;
+    if (!(await requireAdmin())) return;
     await deleteDoc(doc(db, "campaigns", id.toString()));
   };
 
   const addTeamMember = async (member: any) => {
-    if (!requireAdmin()) return;
+    if (!(await requireAdmin())) return;
     await setDoc(doc(db, "team", member.id.toString()), member);
   };
   const removeTeamMember = async (id: number) => {
-    if (!requireAdmin()) return;
+    if (!(await requireAdmin())) return;
     await deleteDoc(doc(db, "team", id.toString()));
   };
 
   const removeClient = async (id: number) => {
-    if (!requireAdmin()) return;
+    if (!(await requireAdmin())) return;
     await deleteDoc(doc(db, "clients", id.toString()));
   };
 
   const removeTransaction = async (id: number) => {
-    if (!requireAdmin()) return;
+    if (!(await requireAdmin())) return;
     await deleteDoc(doc(db, "transactions", id.toString()));
   };
 
   const setCrmData = async (data: any) => {
-    if (!requireAdmin()) return;
+    if (!(await requireAdmin())) return;
     await setDoc(doc(db, "boardConfig", "crm"), data);
   };
 
   const removeLead = async (id: string, colId: string) => {
-    if (!requireAdmin()) return;
+    if (!(await requireAdmin())) return;
     const newLeads = { ...crmData.leads };
     delete newLeads[id];
     const newColumn = {
@@ -248,12 +277,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const setProjectData = async (data: any) => {
-    if (!requireAdmin()) return;
+    if (!(await requireAdmin())) return;
     await setDoc(doc(db, "boardConfig", "projects"), data);
   };
 
   const removeProject = async (id: string, colId: string) => {
-    if (!requireAdmin()) return;
+    if (!(await requireAdmin())) return;
     const newProjects = { ...projectData.projects };
     delete newProjects[id];
     const newColumn = {
@@ -271,7 +300,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const addClient = async (client: Client) => {
-    if (!requireAdmin()) return;
+    if (!(await requireAdmin())) return;
     await setDoc(doc(db, "clients", client.id.toString()), client);
     // Automatically add billing transaction for the new client
     const transactionId = Date.now();
@@ -287,7 +316,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const addTransaction = async (t: Transaction) => {
-    if (!requireAdmin()) return;
+    if (!(await requireAdmin())) return;
     await setDoc(doc(db, "transactions", t.id.toString()), t);
   };
 

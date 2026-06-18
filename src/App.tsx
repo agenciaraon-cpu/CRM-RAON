@@ -1,7 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from './lib/firebase';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import Dashboard from './pages/Dashboard';
@@ -17,20 +15,6 @@ import Team from './pages/Team';
 import Login from './pages/Login';
 
 function Layout() {
-  const [user, loading] = useAuthState(auth);
-
-  if (loading) {
-    return (
-      <div className="h-screen w-full flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-raon-blue"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Login />;
-  }
-
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-900 selection:bg-raon-orange selection:text-white">
       <Sidebar />
