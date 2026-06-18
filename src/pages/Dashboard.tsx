@@ -1,8 +1,8 @@
 import {
   Users, Target, DollarSign, ArrowUpRight, ArrowDownRight, Briefcase, FileCheck, AlertCircle, CheckCircle2
 } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-import { useAppContext } from '../context/AppContext';
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip as RechartsTooltip } from 'recharts';
+import { useAppContext, verificarStatusCliente } from '../context/AppContext';
 
 const COLORS = ['#FF6B00', '#0066FF', '#0033CC', '#64748b'];
 
@@ -12,10 +12,57 @@ export default function Dashboard() {
   const totalReceitas = transactions.filter(t => t.tipo === 'receita').reduce((a, c) => a + c.valor, 0);
   const totalDespesas = transactions.filter(t => t.tipo === 'despesa').reduce((a, c) => a + c.valor, 0);
   const lucro = totalReceitas - totalDespesas;
-  const ativos = clients.filter(c => c.status === 'Ativo').length;
+  
+  const ativos = clients.filter(c => verificarStatusCliente(c).toLowerCase() === 'ativo').length;
+  
   const leadsTotais = Object.keys(crmData.leads).length;
   const propostas = crmData.columns['col-3']?.leadIds?.length || 0;
   const projetosTotais = Object.keys(projectData.projects).length;
+
+  const dashboardFinance = {
+    receberHoje: 0,
+    proximos7Dias: 0,
+    proximos30Dias: 0,
+    inadimplentes: 0,
+    faturamentoMensal: 0
+  };
+
+  const hoje = new Date();
+  
+  clients.forEach(cliente => {
+    const valor = cliente.value || 0;
+    
+    if (cliente.status?.toLowerCase() !== 'cancelado') {
+      dashboardFinance.faturamentoMensal += valor;
+    }
+
+    const status = verificarStatusCliente(cliente);
+    
+    if (status === "INADIMPLENTE") {
+      dashboardFinance.inadimplentes += valor;
+    } else if (!cliente.pagamentoConfirmado && cliente.dia_vencimento) {
+      // Calculate based on the current month's due date
+      const vencimento = new Date(hoje.getFullYear(), hoje.getMonth(), cliente.dia_vencimento);
+      // Adjust if the due date is still coming up this month or has passed
+      // For proper 7/30 days outlook, even if we are at end of month, next month's due dates might be in 30 days
+      // Let's use a simple diff against today:
+      let diffTime = vencimento.getTime() - hoje.getTime();
+      
+      // If it passed this month, maybe they meant next month's? If payment not confirmed, they are either in inadimplente (handled above) or it's today/future.
+      
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (cliente.dia_vencimento === hoje.getDate()) {
+        dashboardFinance.receberHoje += valor;
+      }
+      if (diffDays >= 0 && diffDays <= 7) {
+        dashboardFinance.proximos7Dias += valor;
+      }
+      if (diffDays >= 0 && diffDays <= 30) {
+        dashboardFinance.proximos30Dias += valor;
+      }
+    }
+  });
 
   const stats = [
     { name: 'Faturamento', value: `R$ ${totalReceitas.toLocaleString('pt-BR')}`, change: '', trend: 'neutral', icon: DollarSign, color: 'text-emerald-500', bg: 'bg-emerald-100 dark:bg-emerald-500/20' },
@@ -76,28 +123,31 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="glass rounded-xl p-6 lg:col-span-2 shadow-sm border border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Evolução do Faturamento</h3>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Previsão Financeira</h3>
           </div>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0066FF" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#0066FF" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.2} />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b' }} dy={10} />
-                <YAxis tickFormatter={(val) => `R$${val/1000}k`} axisLine={false} tickLine={false} tick={{ fill: '#64748b' }} dx={-10} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', border: 'none', borderRadius: '8px', color: '#fff' }}
-                  itemStyle={{ color: '#fff' }}
-                  formatter={(value: number) => [`R$ ${value.toLocaleString('pt-BR')}`, 'Faturamento']}
-                />
-                <Area type="monotone" dataKey="total" stroke="#0066FF" strokeWidth={3} fillOpacity={1} fill="url(#colorTotal)" activeDot={{ r: 6, fill: '#FF6B00', stroke: '#fff', strokeWidth: 2 }} />
-              </AreaChart>
-            </ResponsiveContainer>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full pb-8">
+             <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700 flex flex-col justify-center">
+               <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">A Receber Hoje</p>
+               <p className="text-2xl font-bold text-slate-900 dark:text-white">R$ {dashboardFinance.receberHoje.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+             </div>
+             <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700 flex flex-col justify-center">
+               <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Próximos 7 Dias</p>
+               <p className="text-2xl font-bold text-slate-900 dark:text-white">R$ {dashboardFinance.proximos7Dias.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+             </div>
+             <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700 flex flex-col justify-center">
+               <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Próximos 30 Dias</p>
+               <p className="text-2xl font-bold text-slate-900 dark:text-white">R$ {dashboardFinance.proximos30Dias.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+             </div>
+             <div className="bg-red-50 dark:bg-red-500/10 p-4 rounded-xl border border-red-100 dark:border-red-500/20 flex flex-col justify-center">
+               <p className="text-sm text-red-500 dark:text-red-400 mb-1">Inadimplentes</p>
+               <p className="text-2xl font-bold text-red-600 dark:text-red-400">R$ {dashboardFinance.inadimplentes.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+             </div>
+             <div className="md:col-span-2 bg-emerald-50 dark:bg-emerald-500/10 p-4 rounded-xl border border-emerald-100 dark:border-emerald-500/20 flex items-center justify-between mt-2">
+               <div>
+                 <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">Faturamento Mensal Previsto</p>
+               </div>
+               <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">R$ {dashboardFinance.faturamentoMensal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+             </div>
           </div>
         </div>
 
@@ -119,7 +169,7 @@ export default function Dashboard() {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip 
+                <RechartsTooltip 
                   contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', border: 'none', borderRadius: '8px', color: '#fff' }}
                   itemStyle={{ color: '#fff' }}
                 />

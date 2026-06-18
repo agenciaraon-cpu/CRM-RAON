@@ -15,6 +15,29 @@ import {
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
+export function verificarStatusCliente(cliente: any) {
+  const hoje = new Date();
+  
+  if (cliente.dia_vencimento) {
+    const vencimento = new Date(
+      hoje.getFullYear(),
+      hoje.getMonth(),
+      cliente.dia_vencimento
+    );
+
+    if (cliente.pagamentoConfirmado) {
+      return "ATIVO";
+    }
+
+    if (hoje > vencimento) {
+      return "INADIMPLENTE";
+    }
+
+    return "A VENCER";
+  }
+  return cliente.status;
+}
+
 export interface Client {
   id: number;
   name: string;

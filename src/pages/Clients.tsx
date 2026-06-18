@@ -1,14 +1,16 @@
 import { Building2, Search, Filter, MoreVertical, Plus, X, Trash } from 'lucide-react';
 import React, { useState } from 'react';
-import { useAppContext } from '../context/AppContext';
+import { useAppContext, verificarStatusCliente } from '../context/AppContext';
 
 const getStatusColor = (status: string) => {
-  switch(status) {
-    case 'Ativo': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400';
-    case 'Em implantação': return 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400';
-    case 'Pausado': 
-    case 'Inadimplente': return 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400';
-    case 'Cancelado': return 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400';
+  const normStatus = status.toLowerCase();
+  switch(normStatus) {
+    case 'ativo': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400';
+    case 'em implantação': return 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400';
+    case 'pausado': 
+    case 'inadimplente': return 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400';
+    case 'a vencer': return 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400';
+    case 'cancelado': return 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400';
     default: return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400';
   }
 }
@@ -35,9 +37,11 @@ export default function Clients() {
     e.preventDefault();
 
     let formattedDate = formData.dueDate;
+    let diaVencimento = 1;
     if (formData.dueDate) {
       const [year, month, day] = formData.dueDate.split('-');
       formattedDate = `${day}/${month}/${year}`;
+      diaVencimento = parseInt(day, 10);
     }
 
     const finalValue = parseFloat(formData.value.replace(',', '.')) || 0;
@@ -50,6 +54,8 @@ export default function Clients() {
       owner: formData.owner,
       value: finalValue,
       dueDate: formData.dueDate || new Date().toISOString().split('T')[0],
+      dia_vencimento: diaVencimento,
+      pagamentoConfirmado: formData.status.toLowerCase() === 'ativo', // Base it initially on user choice
     };
     
     addClient(newClient);
@@ -113,8 +119,8 @@ export default function Clients() {
                   </td>
                   <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{client.plan}</td>
                   <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold tracking-wide ${getStatusColor(client.status)}`}>
-                      {client.status}
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold tracking-wide ${getStatusColor(verificarStatusCliente(client))}`}>
+                      {verificarStatusCliente(client)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{client.owner}</td>

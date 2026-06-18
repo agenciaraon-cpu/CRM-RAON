@@ -11,12 +11,20 @@ export default function CRM() {
   const [activeLeadId, setActiveLeadId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    name: '',
-    company: '',
+    nome: '',
+    empresa: '',
+    telefone: '',
     email: '',
-    phone: '',
-    cityState: '',
-    service: '',
+    estado: '',
+    cidade: '',
+    origem: '',
+    temperatura: 'Frio',
+    interesse: '',
+    valor_potencial: '',
+    probabilidade: '',
+    proxima_acao: '',
+    data_proximo_contato: '',
+    observacoes: ''
   });
 
   const [proposalData, setProposalData] = useState({
@@ -66,14 +74,25 @@ export default function CRM() {
     const newLeadId = `lead-${Date.now()}`;
     const newLead = {
       id: newLeadId,
-      name: formData.name,
-      company: formData.company,
+      name: formData.nome,
+      company: formData.empresa,
+      phone: formData.telefone,
       email: formData.email,
-      phone: formData.phone,
-      cityState: formData.cityState,
-      service: formData.service,
-      tags: [formData.service].filter(Boolean),
-      value: "A definir",
+      estado: formData.estado,
+      cidade: formData.cidade,
+      cityState: `${formData.cidade} - ${formData.estado}`,
+      origem: formData.origem,
+      temperatura: formData.temperatura,
+      service: formData.interesse,
+      interesse: formData.interesse,
+      valor_potencial: formData.valor_potencial,
+      probabilidade: formData.probabilidade,
+      proxima_acao: formData.proxima_acao,
+      data_proximo_contato: formData.data_proximo_contato,
+      observacoes: formData.observacoes,
+      created_at: new Date().toISOString(),
+      tags: [formData.interesse, formData.temperatura].filter(Boolean),
+      value: formData.valor_potencial || "A definir",
       plan: "A definir"
     };
 
@@ -96,7 +115,7 @@ export default function CRM() {
     });
 
     setIsModalOpen(false);
-    setFormData({ name: '', company: '', email: '', phone: '', cityState: '', service: '' });
+    setFormData({ nome: '', empresa: '', telefone: '', email: '', estado: '', cidade: '', origem: '', temperatura: 'Frio', interesse: '', valor_potencial: '', probabilidade: '', proxima_acao: '', data_proximo_contato: '', observacoes: '' });
   };
 
   const handleUpdateProposal = (e: any) => {
@@ -184,6 +203,7 @@ export default function CRM() {
                           const isContatoRealizado = colId === "col-2";
                           
                           return (
+                            // @ts-ignore
                             <Draggable key={lead.id} draggableId={lead.id} index={index}>
                               {(provided, snapshot) => (
                                 <div
@@ -326,30 +346,66 @@ export default function CRM() {
             </div>
             
             <form onSubmit={handleAddLead} className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto px-1 custom-scrollbar">
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nome da Pessoa *</label>
-                  <input required type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-raon-blue" placeholder="Ex: João Silva" />
+                  <input required type="text" value={formData.nome} onChange={(e) => setFormData({...formData, nome: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-raon-blue" placeholder="Ex: João Silva" />
                 </div>
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Empresa</label>
-                  <input type="text" value={formData.company} onChange={(e) => setFormData({...formData, company: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-raon-blue" placeholder="Ex: Empresa Tech" />
+                  <input type="text" value={formData.empresa} onChange={(e) => setFormData({...formData, empresa: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-raon-blue" placeholder="Ex: Empresa Tech" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Telefone / WhatsApp *</label>
+                  <input required type="text" value={formData.telefone} onChange={(e) => setFormData({...formData, telefone: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-raon-blue" placeholder="(11) 99999-9999" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">E-mail</label>
                   <input type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-raon-blue" placeholder="email@exemplo.com" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Número de WhatsApp *</label>
-                  <input required type="text" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-raon-blue" placeholder="(11) 99999-9999" />
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Estado</label>
+                  <input type="text" value={formData.estado} onChange={(e) => setFormData({...formData, estado: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-raon-blue" placeholder="Ex: SP" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Cidade</label>
+                  <input type="text" value={formData.cidade} onChange={(e) => setFormData({...formData, cidade: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-raon-blue" placeholder="Ex: São Paulo" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Origem</label>
+                  <input type="text" value={formData.origem} onChange={(e) => setFormData({...formData, origem: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-raon-blue" placeholder="Ex: Instagram, Indicação..." />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Temperatura</label>
+                  <select value={formData.temperatura} onChange={(e) => setFormData({...formData, temperatura: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-raon-blue">
+                    <option value="Frio">Frio</option>
+                    <option value="Morno">Morno</option>
+                    <option value="Quente">Quente</option>
+                  </select>
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Cidade e Estado</label>
-                  <input type="text" value={formData.cityState} onChange={(e) => setFormData({...formData, cityState: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-raon-blue" placeholder="Ex: São Paulo, SP" />
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Interesse / Serviço</label>
+                  <input type="text" value={formData.interesse} onChange={(e) => setFormData({...formData, interesse: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-raon-blue" placeholder="Ex: Tráfego Pago" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Valor Potencial (R$)</label>
+                  <input type="number" step="0.01" value={formData.valor_potencial} onChange={(e) => setFormData({...formData, valor_potencial: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-raon-blue" placeholder="0.00" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Probabilidade (%)</label>
+                  <input type="number" value={formData.probabilidade} onChange={(e) => setFormData({...formData, probabilidade: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-raon-blue" placeholder="Ex: 50" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Próxima Ação</label>
+                  <input type="text" value={formData.proxima_acao} onChange={(e) => setFormData({...formData, proxima_acao: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-raon-blue" placeholder="Ex: Ligar amanhã" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Data do Próximo Contato</label>
+                  <input type="date" value={formData.data_proximo_contato} onChange={(e) => setFormData({...formData, data_proximo_contato: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-raon-blue" />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Serviço Desejado</label>
-                  <input type="text" value={formData.service} onChange={(e) => setFormData({...formData, service: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-raon-blue" placeholder="Ex: Tráfego Pago, Social Media..." />
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Observações</label>
+                  <textarea rows={3} value={formData.observacoes} onChange={(e) => setFormData({...formData, observacoes: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-raon-blue" placeholder="Detalhes adicionais..."></textarea>
                 </div>
               </div>
 

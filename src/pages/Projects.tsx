@@ -9,11 +9,17 @@ export default function Projects() {
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    client: registeredClients[0] || 'Outro...',
+    cliente: registeredClients[0] || 'Outro...',
     customClient: '',
-    service: '',
-    priority: 'Média',
-    deadline: ''
+    nomeProjeto: '',
+    categoria: '',
+    dataCriacao: new Date().toISOString().split('T')[0],
+    prazoEntrega: '',
+    responsavel: '',
+    prioridade: 'media',
+    status: 'briefing',
+    objetivo: '',
+    observacoes: ''
   });
 
   const getPriorityColor = (priority: string) => {
@@ -57,23 +63,28 @@ export default function Projects() {
   const handleAddProject = (e: any) => {
     e.preventDefault();
 
-    let displayDate = formData.deadline;
-    if (formData.deadline) {
-       displayDate = formData.deadline; // Keep as YYYY-MM-DD for simpler approaching calculation
-    }
-
-    const finalClient = formData.client === 'Outro...' ? formData.customClient : formData.client;
+    const finalClient = formData.cliente === 'Outro...' ? formData.customClient : formData.cliente;
 
     const newId = `proj-${Date.now()}`;
     const newProject = {
       id: newId,
-      name: formData.service,
+      name: formData.nomeProjeto,
       client: finalClient,
-      date: displayDate || '--/--/----',
+      date: formData.prazoEntrega || '--/--/----',
       attachments: 0,
       comments: 0,
       tasks: '0/0',
-      priority: formData.priority,
+      priority: formData.prioridade === 'baixa' ? 'Baixa' : formData.prioridade === 'media' ? 'Média' : formData.prioridade === 'alta' ? 'Alta' : 'Urgente',
+      cliente: finalClient,
+      nomeProjeto: formData.nomeProjeto,
+      categoria: formData.categoria,
+      dataCriacao: formData.dataCriacao,
+      prazoEntrega: formData.prazoEntrega,
+      responsavel: formData.responsavel,
+      prioridade: formData.prioridade,
+      status: formData.status,
+      objetivo: formData.objetivo,
+      observacoes: formData.observacoes,
     };
 
     const firstColumn = data.columnOrder[0];
@@ -95,11 +106,17 @@ export default function Projects() {
 
     setIsModalOpen(false);
     setFormData({
-       client: registeredClients[0],
+       cliente: registeredClients[0] || 'Outro...',
        customClient: '',
-       service: '',
-       priority: 'Média',
-       deadline: ''
+       nomeProjeto: '',
+       categoria: '',
+       dataCriacao: new Date().toISOString().split('T')[0],
+       prazoEntrega: '',
+       responsavel: '',
+       prioridade: 'media',
+       status: 'briefing',
+       objetivo: '',
+       observacoes: ''
     });
   };
 
@@ -180,8 +197,9 @@ export default function Projects() {
                         {projects.map((project, index) => {
                            const approaching = isDeadlineApproaching(project.date);
                            return (
-                          <Draggable key={project.id} draggableId={project.id} index={index}>
-                            {(provided, snapshot) => (
+                             // @ts-ignore
+                             <Draggable key={project.id} draggableId={project.id} index={index}>
+                               {(provided, snapshot) => (
                               <div
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
@@ -259,81 +277,116 @@ export default function Projects() {
                </div>
                
                <form onSubmit={handleAddProject} className="p-6 space-y-4">
-                  <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Cliente / Instituição</label>
-                  <select 
-                     name="client"
-                     value={formData.client}
-                     onChange={handleInputChange}
-                     className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-raon-blue dark:bg-slate-800 dark:text-white"
-                  >
-                     {registeredClients.map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                     ))}
-                  </select>
-                  </div>
+                  <div className="grid grid-cols-2 gap-4 max-h-[60vh] overflow-y-auto px-1 custom-scrollbar">
+                    <div className="col-span-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Cliente / Instituição</label>
+                    <select 
+                       name="cliente"
+                       value={formData.cliente}
+                       onChange={handleInputChange}
+                       className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-raon-blue dark:bg-slate-800 dark:text-white"
+                    >
+                       {registeredClients.map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                       ))}
+                    </select>
+                    </div>
 
-                  {formData.client === 'Outro...' && (
-                     <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nome do Cliente</label>
-                        <input 
-                           type="text" 
-                           name="customClient" 
-                           required={formData.client === 'Outro...'}
-                           value={formData.customClient}
-                           onChange={handleInputChange}
-                           className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-raon-blue dark:bg-slate-800 dark:text-white" 
-                           placeholder="Digite o nome do cliente" 
-                        />
-                     </div>
-                  )}
+                    {formData.cliente === 'Outro...' && (
+                       <div className="col-span-2">
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nome do Cliente</label>
+                          <input 
+                             type="text" 
+                             name="customClient" 
+                             required={formData.cliente === 'Outro...'}
+                             value={formData.customClient}
+                             onChange={handleInputChange}
+                             className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-raon-blue dark:bg-slate-800 dark:text-white" 
+                             placeholder="Digite o nome do cliente" 
+                          />
+                       </div>
+                    )}
 
-                  <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Serviço a realizar</label>
-                  <input 
-                     type="text" 
-                     name="service" 
-                     required
-                     value={formData.service}
-                     onChange={handleInputChange}
-                     className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-raon-blue dark:bg-slate-800 dark:text-white" 
-                     placeholder="Ex: Criação de Site Institucional" 
-                  />
-                  </div>
+                    <div className="col-span-2">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nome do Projeto</label>
+                    <input 
+                       type="text" 
+                       name="nomeProjeto" 
+                       required
+                       value={formData.nomeProjeto}
+                       onChange={handleInputChange}
+                       className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-raon-blue dark:bg-slate-800 dark:text-white" 
+                       placeholder="Ex: Criação de Site Institucional" 
+                    />
+                    </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                  <div>
-                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Urgência</label>
-                     <select 
-                        name="priority"
-                        value={formData.priority}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-raon-blue dark:bg-slate-800 dark:text-white"
-                     >
-                        <option value="Baixa">Baixa</option>
-                        <option value="Média">Média</option>
-                        <option value="Alta">Alta</option>
-                        <option value="Urgente">Urgente</option>
-                     </select>
-                  </div>
-                  
-                  <div className="relative group/dl">
-                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
-                        Prazo de Entrega
-                     </label>
-                     <input 
-                        type="date" 
-                        name="deadline" 
-                        required
-                        value={formData.deadline}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 dark:bg-slate-800 dark:text-white" 
-                     />
-                     <div className="absolute top-1 right-0 text-[10px] text-amber-600 bg-amber-100 rounded px-1.5 py-0.5 flex items-center gap-1 font-bold">
-                        <AlertCircle className="h-3 w-3" />
-                        Alerta ativado
-                     </div>
-                  </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Categoria</label>
+                      <input type="text" name="categoria" value={formData.categoria} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-raon-blue dark:bg-slate-800 dark:text-white" placeholder="Ex: Web, Design, Tráfego" />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Responsável</label>
+                      <input type="text" name="responsavel" value={formData.responsavel} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-raon-blue dark:bg-slate-800 dark:text-white" placeholder="Ex: João" />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Data Criação</label>
+                      <input type="date" name="dataCriacao" required value={formData.dataCriacao} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-raon-blue dark:bg-slate-800 dark:text-white" />
+                    </div>
+
+                    <div className="relative group/dl">
+                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
+                          Prazo de Entrega
+                       </label>
+                       <input 
+                          type="date" 
+                          name="prazoEntrega" 
+                          required
+                          value={formData.prazoEntrega}
+                          onChange={handleInputChange}
+                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 dark:bg-slate-800 dark:text-white" 
+                       />
+                       <div className="absolute top-1 right-0 text-[10px] text-amber-600 bg-amber-100 rounded px-1.5 py-0.5 flex items-center gap-1 font-bold">
+                          <AlertCircle className="h-3 w-3" />
+                          Alerta ativado
+                       </div>
+                    </div>
+
+                    <div>
+                       <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Prioridade</label>
+                       <select 
+                          name="prioridade"
+                          value={formData.prioridade}
+                          onChange={handleInputChange}
+                          className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-raon-blue dark:bg-slate-800 dark:text-white"
+                       >
+                          <option value="baixa">Baixa</option>
+                          <option value="media">Média</option>
+                          <option value="alta">Alta</option>
+                          <option value="urgente">Urgente</option>
+                       </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Status</label>
+                      <select name="status" value={formData.status} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-raon-blue dark:bg-slate-800 dark:text-white">
+                        <option value="briefing">Briefing</option>
+                        <option value="execucao">Em Execução</option>
+                        <option value="revisao">Revisão</option>
+                        <option value="concluido">Concluído</option>
+                      </select>
+                    </div>
+
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Objetivo</label>
+                      <textarea name="objetivo" rows={2} value={formData.objetivo} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-raon-blue dark:bg-slate-800 dark:text-white" placeholder="Objetivo do projeto..." />
+                    </div>
+                    
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Observações</label>
+                      <textarea name="observacoes" rows={2} value={formData.observacoes} onChange={handleInputChange} className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-raon-blue dark:bg-slate-800 dark:text-white" placeholder="Outras informações..." />
+                    </div>
                   </div>
 
                   <div className="mt-6 flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
