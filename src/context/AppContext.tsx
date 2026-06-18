@@ -12,30 +12,68 @@ import {
   setDoc,
   deleteDoc,
   getDoc,
+  updateDoc,
 } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
-export function verificarStatusCliente(cliente: any) {
+export function getCompetenciaAtual() {
   const hoje = new Date();
+  return `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+}
+
+export function verificarStatusCliente(cliente: any) {
+  if (!cliente.dia_vencimento) return cliente.status;
+
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
   
-  if (cliente.dia_vencimento) {
-    const vencimento = new Date(
-      hoje.getFullYear(),
-      hoje.getMonth(),
-      cliente.dia_vencimento
-    );
+  const diaVencimento = cliente.dia_vencimento;
+  const mesAtual = hoje.getMonth();
+  const anoAtual = hoje.getFullYear();
 
-    if (cliente.pagamentoConfirmado) {
-      return "ATIVO";
-    }
+  const competenciaAtual = `${anoAtual}-${String(mesAtual + 1).padStart(2, '0')}`;
+  const isPagoEsteMes = cliente.ultimaCompetenciaPaga === competenciaAtual || 
+                        (cliente.ultimaCompetenciaPaga === undefined && cliente.pagamentoConfirmado);
 
-    if (hoje > vencimento) {
-      return "INADIMPLENTE";
-    }
-
-    return "A VENCER";
+  if (isPagoEsteMes) {
+    return "ATIVO";
   }
-  return cliente.status;
+
+  const dataVencimentoAtual = new Date(anoAtual, mesAtual, diaVencimento);
+  if (hoje.getTime() > dataVencimentoAtual.getTime()) {
+    return "INADIMPLENTE";
+  }
+
+  return "A VENCER";
+}
+
+export function getProximoVencimentoData(cliente: any) {
+  if (!cliente.dia_vencimento) return null;
+
+  const hoje = new Date();
+  const diaVencimento = cliente.dia_vencimento;
+  let mesAvaliado = hoje.getMonth();
+  let anoAvaliado = hoje.getFullYear();
+  
+  const competenciaAtual = `${anoAvaliado}-${String(mesAvaliado + 1).padStart(2, '0')}`;
+  const isPagoEsteMes = cliente.ultimaCompetenciaPaga === competenciaAtual || 
+                        (cliente.ultimaCompetenciaPaga === undefined && cliente.pagamentoConfirmado);
+
+  if (isPagoEsteMes) {
+    mesAvaliado++;
+    if (mesAvaliado > 11) {
+      mesAvaliado = 0;
+      anoAvaliado++;
+    }
+  }
+
+  return new Date(anoAvaliado, mesAvaliado, diaVencimento);
+}
+
+export function formatProximoVencimento(cliente: any) {
+  const date = getProximoVencimentoData(cliente);
+  if (!date) return cliente.dueDate; // fallback
+  return date.toLocaleDateString('pt-BR');
 }
 
 export interface Client {
@@ -46,6 +84,9 @@ export interface Client {
   owner: string;
   value: number;
   dueDate: string;
+  dia_vencimento?: number;
+  pagamentoConfirmado?: boolean;
+  ultimaCompetenciaPaga?: string;
 }
 
 export interface Transaction {
@@ -85,6 +126,7 @@ export interface Project {
 interface AppState {
   clients: Client[];
   addClient: (client: Client) => void;
+  updateClient: (id: number, data: Partial<Client>) => void;
 
   transactions: Transaction[];
   addTransaction: (transaction: Transaction) => void;
@@ -225,6 +267,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await deleteDoc(doc(db, "team", id.toString()));
   };
 
+  const updateClient = async (id: number, data: Partial<Client>) => {
+    await updateDoc(doc(db, "clients", id.toString()), data);
+  };
+
   const removeClient = async (id: number) => {
     await deleteDoc(doc(db, "clients", id.toString()));
   };
@@ -299,6 +345,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       value={{
         clients,
         addClient,
+        updateClient,
         removeClient,
         transactions,
         addTransaction,

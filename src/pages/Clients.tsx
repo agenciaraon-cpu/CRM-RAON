@@ -1,6 +1,6 @@
-import { Building2, Search, Filter, MoreVertical, Plus, X, Trash } from 'lucide-react';
+import { Building2, Search, Filter, MoreVertical, Plus, X, Trash, CheckCircle2 } from 'lucide-react';
 import React, { useState } from 'react';
-import { useAppContext, verificarStatusCliente } from '../context/AppContext';
+import { useAppContext, verificarStatusCliente, formatProximoVencimento, getCompetenciaAtual } from '../context/AppContext';
 
 const getStatusColor = (status: string) => {
   const normStatus = status.toLowerCase();
@@ -16,7 +16,7 @@ const getStatusColor = (status: string) => {
 }
 
 export default function Clients() {
-  const { clients, addClient, removeClient } = useAppContext();
+  const { clients, addClient, updateClient, removeClient } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -61,6 +61,13 @@ export default function Clients() {
     addClient(newClient);
     setIsModalOpen(false);
     setFormData({ name: '', plan: 'Prata', status: 'Ativo', owner: '', value: '', dueDate: '' });
+  };
+
+  const handleConfirmarPagamento = (client: any) => {
+    updateClient(client.id, {
+      ultimaCompetenciaPaga: getCompetenciaAtual(),
+      pagamentoConfirmado: true
+    });
   };
 
   return (
@@ -127,8 +134,17 @@ export default function Clients() {
                   <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
                     R$ {client.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
-                  <td className="px-6 py-4 text-slate-500">{client.dueDate.split('-').reverse().join('/')}</td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-4 text-slate-500">{formatProximoVencimento(client)}</td>
+                  <td className="px-6 py-4 text-right flex justify-end gap-2">
+                    {verificarStatusCliente(client) !== 'ATIVO' && (
+                      <button 
+                        onClick={() => handleConfirmarPagamento(client)}
+                        className="text-emerald-500 hover:text-emerald-600 transition-colors opacity-0 group-hover:opacity-100"
+                        title="Confirmar Pagamento Deste Mês"
+                      >
+                        <CheckCircle2 className="h-5 w-5" />
+                      </button>
+                    )}
                     <button 
                       onClick={() => removeClient(client.id)}
                       className="text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
