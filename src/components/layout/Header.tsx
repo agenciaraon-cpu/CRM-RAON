@@ -1,8 +1,12 @@
-import { Bell, Search, Menu, Moon, Sun } from 'lucide-react';
+import { Bell, Search, Menu, Moon, Sun, LogIn, LogOut } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { auth } from '../../lib/firebase';
+import { signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 export default function Header() {
   const [isDark, setIsDark] = useState(false);
+  const [user] = useAuthState(auth);
 
   useEffect(() => {
     if (isDark) {
@@ -43,6 +47,33 @@ export default function Header() {
           <span className="absolute top-1.5 right-1.5 block h-2 w-2 rounded-full bg-raon-orange ring-2 ring-white dark:ring-slate-900" />
           <Bell className="h-5 w-5" />
         </button>
+        {user ? (
+          <button 
+            onClick={() => signOut(auth)}
+            className="ml-2 px-3 py-1.5 text-sm font-medium text-red-500 hover:text-white border border-red-200 hover:bg-red-500 hover:border-transparent rounded-lg transition-colors flex items-center gap-2"
+          >
+            <LogOut className="h-4 w-4" />
+            <span className="hidden sm:inline">Sair</span>
+          </button>
+        ) : (
+          <button 
+            onClick={async () => {
+              try {
+                const provider = new GoogleAuthProvider();
+                provider.setCustomParameters({ prompt: 'select_account' });
+                await signInWithPopup(auth, provider);
+              } catch (err: any) {
+                if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+                  alert("Erro ao fazer login. Tente desativar bloqueadores de pop-up ou tente novamente.");
+                }
+              }
+            }}
+            className="ml-2 px-3 py-1.5 text-sm font-medium text-white bg-raon-blue hover:bg-raon-dark rounded-lg transition-colors flex items-center gap-2 shadow-lg shadow-raon-blue/20"
+          >
+            <LogIn className="h-4 w-4" />
+            <span className="hidden sm:inline">Entrar com Google</span>
+          </button>
+        )}
       </div>
     </header>
   );

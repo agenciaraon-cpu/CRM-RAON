@@ -133,27 +133,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [user] = useAuthState(auth);
 
   const requireAdmin = async () => {
-    let currentUser = user;
-    if (!currentUser) {
-      try {
-        const provider = new GoogleAuthProvider();
-        provider.setCustomParameters({ prompt: "select_account" });
-        const result = await signInWithPopup(auth, provider);
-        currentUser = result.user as any;
-      } catch (err: any) {
-        if (
-          err.code !== "auth/popup-closed-by-user" &&
-          err.code !== "auth/cancelled-popup-request"
-        ) {
-          alert("Erro ao fazer login com Google. Tente novamente.");
-        }
-        return false;
-      }
+    if (!user) {
+      alert("Acesso Restrito: Você precisa estar logado para realizar alterações.");
+      return false;
     }
-
+    
     if (
-      currentUser?.email !== "storearca7@gmail.com" &&
-      currentUser?.email !== "agenciaraon@gmail.com"
+      user?.email !== "storearca7@gmail.com" &&
+      user?.email !== "agenciaraon@gmail.com"
     ) {
       alert(
         "Acesso Restrito: Apenas administradores podem realizar alterações.",
