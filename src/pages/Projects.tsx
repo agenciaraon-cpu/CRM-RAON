@@ -49,12 +49,12 @@ export default function Projects() {
     return diffDays > 0 && diffDays <= 3;
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: any) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAddProject = (e: React.FormEvent) => {
+  const handleAddProject = (e: any) => {
     e.preventDefault();
 
     let displayDate = formData.deadline;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Plus, MoreHorizontal, Phone, Mail, Building2, MapPin, Trash, Check, ThumbsUp, ThumbsDown, DollarSign, Briefcase, X } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
@@ -61,7 +61,7 @@ export default function CRM() {
     });
   };
 
-  const handleAddLead = (e: React.FormEvent) => {
+  const handleAddLead = (e: any) => {
     e.preventDefault();
     const newLeadId = `lead-${Date.now()}`;
     const newLead = {
@@ -99,7 +99,7 @@ export default function CRM() {
     setFormData({ name: '', company: '', email: '', phone: '', cityState: '', service: '' });
   };
 
-  const handleUpdateProposal = (e: React.FormEvent) => {
+  const handleUpdateProposal = (e: any) => {
     e.preventDefault();
     if (!activeLeadId) return;
 

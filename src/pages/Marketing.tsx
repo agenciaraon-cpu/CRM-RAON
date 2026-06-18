@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { CalendarDays, Megaphone, Flag, Plus, MoreHorizontal, X, Trash } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
@@ -12,12 +12,12 @@ export default function Marketing() {
     status: 'Ativo'
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: any) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAddCampaign = (e: React.FormEvent) => {
+  const handleAddCampaign = (e: any) => {
     e.preventDefault();
     const finalValue = parseFloat(formData.budget.replace(',', '.')) || 0;
     

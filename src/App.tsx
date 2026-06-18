@@ -12,7 +12,6 @@ import Support from './pages/Support';
 import Marketing from './pages/Marketing';
 import Executive from './pages/Executive';
 import Team from './pages/Team';
-import Login from './pages/Login';
 
 function Layout() {
   return (

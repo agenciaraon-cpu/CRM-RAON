@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Send, Bot, User, Sparkles, Image, FileText, Zap } from 'lucide-react';
 
 const mockMessaegs = [
@@ -18,7 +18,7 @@ export default function IA() {
   const [messages, setMessages] = useState(mockMessaegs);
   const [input, setInput] = useState('');
 
-  const handleSend = (e: React.FormEvent) => {
+  const handleSend = (e: any) => {
     e.preventDefault();
     if (!input.trim()) return;
     

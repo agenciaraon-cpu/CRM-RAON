@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Settings, CheckCircle2, Search, Plus, Star, X, Trash } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
@@ -10,12 +10,12 @@ export default function Team() {
     role: '',
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: any) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAddMember = (e: React.FormEvent) => {
+  const handleAddMember = (e: any) => {
     e.preventDefault();
     const initials = formData.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     

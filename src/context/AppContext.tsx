@@ -151,21 +151,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setTeam(snapshot.docs.map((doc) => doc.data()));
     });
 
-    const unsubCrm = onSnapshot(doc(db, "boardConfig", "crm"), (doc) => {
-      if (doc.exists()) {
-        setCrmDataState(doc.data() as any);
+    const unsubCrm = onSnapshot(doc(db, "boardConfig", "crm"), (docSnap: any) => {
+      if (docSnap.exists()) {
+        setCrmDataState(docSnap.data() as any);
       } else {
-        setDoc(doc.ref, initialCrmData);
+        setDoc(docSnap.ref, initialCrmData);
       }
     });
 
     const unsubProject = onSnapshot(
       doc(db, "boardConfig", "projects"),
-      (doc) => {
-        if (doc.exists()) {
-          setProjectDataState(doc.data() as any);
+      (docSnap: any) => {
+        if (docSnap.exists()) {
+          setProjectDataState(docSnap.data() as any);
         } else {
-          setDoc(doc.ref, initialProjectData);
+          setDoc(docSnap.ref, initialProjectData);
         }
       },
     );

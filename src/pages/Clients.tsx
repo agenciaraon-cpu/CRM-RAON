@@ -1,5 +1,5 @@
 import { Building2, Search, Filter, MoreVertical, Plus, X, Trash } from 'lucide-react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 
 const getStatusColor = (status: string) => {
@@ -26,12 +26,12 @@ export default function Clients() {
     dueDate: '',
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: any) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAddClient = (e: React.FormEvent) => {
+  const handleAddClient = (e: any) => {
     e.preventDefault();
 
     let formattedDate = formData.dueDate;

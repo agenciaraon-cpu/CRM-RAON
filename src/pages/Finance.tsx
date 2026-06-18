@@ -1,6 +1,6 @@
 import { DollarSign, TrendingUp, TrendingDown, CreditCard, Download, Plus, X, Trash } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 
 export default function Finance() {
@@ -15,12 +15,12 @@ export default function Finance() {
     valor: '',
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: any) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAddTransaction = (e: React.FormEvent) => {
+  const handleAddTransaction = (e: any) => {
     e.preventDefault();
 
     let formattedDate = formData.data;

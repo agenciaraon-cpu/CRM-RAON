@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Search, Filter, MessageSquare, AlertCircle, Clock, CheckCircle2, MoreVertical, Plus, Trash } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
@@ -32,12 +32,12 @@ export default function Support() {
     agent: ''
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: any) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAddTicket = (e: React.FormEvent) => {
+  const handleAddTicket = (e: any) => {
     e.preventDefault();
     const newId = tickets.length + 1;
     const newTicket = {
