@@ -64,7 +64,7 @@ export default function Header() {
                 await signInWithPopup(auth, provider);
               } catch (err: any) {
                 if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
-                  alert("Erro ao fazer login. Tente desativar bloqueadores de pop-up ou tente novamente.");
+                  alert("Erro ao fazer login com Google: O pop-up foi bloqueado pelo navegador ou pelo ambiente de visualização.\n\nPor favor, abra o aplicativo em uma NOVA GUIA (clicando no botão de seta no canto superior direito do preview) e tente novamente.");
                 }
               }
             }}
