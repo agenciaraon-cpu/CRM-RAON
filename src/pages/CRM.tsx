@@ -134,6 +134,34 @@ export default function CRM() {
       }
     });
 
+    // Automatically move to col-3 if it's currently in col-2
+    // Wait, since setData is async relative to state updates, if I call moveLead right after, it will overwrite my leads update if I don't combine them.
+    // Let's do it in one setData call!
+    let updatedColumns = { ...data.columns };
+    if (updatedColumns["col-2"].leadIds.includes(activeLeadId)) {
+      updatedColumns["col-2"] = {
+        ...updatedColumns["col-2"],
+        leadIds: updatedColumns["col-2"].leadIds.filter((id: string) => id !== activeLeadId)
+      };
+      updatedColumns["col-3"] = {
+        ...updatedColumns["col-3"],
+        leadIds: [activeLeadId, ...updatedColumns["col-3"].leadIds]
+      };
+      
+      setData({
+        ...data,
+        columns: updatedColumns,
+        leads: {
+          ...data.leads,
+          [activeLeadId]: {
+            ...data.leads[activeLeadId],
+            plan: proposalData.plan,
+            value: proposalData.value
+          }
+        }
+      });
+    }
+
     setIsEditProposalModalOpen(false);
     setProposalData({ plan: '', value: '' });
     setActiveLeadId(null);
@@ -286,13 +314,36 @@ export default function CRM() {
                                   )}
                                   
                                   {/* Actions based on column */}
-                                  <div className="mt-4 pt-2">
+                                  <div className="mt-4 pt-2 space-y-2">
                                     {colId === "col-1" && (
                                       <button 
                                         onClick={() => moveLead(lead.id, colId, "col-2")}
                                         className="w-full flex items-center justify-center gap-1 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-500 hover:bg-amber-100 dark:hover:bg-amber-500/20 py-1.5 px-3 rounded text-xs font-semibold transition-colors border border-amber-200 dark:border-amber-500/30"
                                       >
-                                        <Check className="h-3 w-3" /> OK - Contato Realizado
+                                        <Check className="h-3 w-3" /> Confirmar Contato
+                                      </button>
+                                    )}
+
+                                    {colId === "col-2" && (
+                                      <button 
+                                        onClick={() => {
+                                          setActiveLeadId(lead.id);
+                                          setProposalData({ plan: lead.plan || '', value: lead.value || '' });
+                                          setIsEditProposalModalOpen(true);
+                                          // Note: In handleSaveProposal we need to move it to col-3 if it is in col-2
+                                        }}
+                                        className="w-full flex items-center justify-center gap-1 bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-500/20 py-1.5 px-3 rounded text-xs font-semibold transition-colors border border-blue-200 dark:border-blue-500/30"
+                                      >
+                                        <Mail className="h-3 w-3" /> Enviar Proposta
+                                      </button>
+                                    )}
+
+                                    {colId === "col-3" && (
+                                      <button 
+                                        onClick={() => moveLead(lead.id, colId, "col-4")}
+                                        className="w-full flex items-center justify-center gap-1 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-500 hover:bg-purple-100 dark:hover:bg-purple-500/20 py-1.5 px-3 rounded text-xs font-semibold transition-colors border border-purple-200 dark:border-purple-500/30"
+                                      >
+                                        <Check className="h-3 w-3" /> Receber Resultado
                                       </button>
                                     )}
 
@@ -301,16 +352,16 @@ export default function CRM() {
                                         <button 
                                           onClick={() => moveLead(lead.id, colId, "col-5")}
                                           className="flex-1 flex items-center justify-center gap-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 py-1.5 px-2 rounded text-xs font-bold transition-colors border border-emerald-200 dark:border-emerald-500/30"
-                                          title="Positivo (Fechado)"
+                                          title="Fechado Ganho"
                                         >
-                                          <ThumbsUp className="h-3 w-3" /> Positivo
+                                          <ThumbsUp className="h-3 w-3" /> Ganho
                                         </button>
                                         <button 
                                           onClick={() => moveLead(lead.id, colId, "col-6")}
                                           className="flex-1 flex items-center justify-center gap-1 bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-500/20 py-1.5 px-2 rounded text-xs font-bold transition-colors border border-rose-200 dark:border-rose-500/30"
-                                          title="Negativo (Perdido)"
+                                          title="Fechado Perdido"
                                         >
-                                          <ThumbsDown className="h-3 w-3" /> Negativo
+                                          <ThumbsDown className="h-3 w-3" /> Perdido
                                         </button>
                                       </div>
                                     )}
