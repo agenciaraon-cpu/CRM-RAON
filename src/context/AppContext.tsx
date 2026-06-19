@@ -22,6 +22,7 @@ export function getCompetenciaAtual() {
 }
 
 export function verificarStatusCliente(cliente: any) {
+  if (cliente.status?.toUpperCase() === 'CANCELADO') return 'CANCELADO';
   if (!cliente.dia_vencimento) return cliente.status;
 
   const hoje = new Date();
@@ -32,34 +33,67 @@ export function verificarStatusCliente(cliente: any) {
   const anoAtual = hoje.getFullYear();
 
   const competenciaAtual = `${anoAtual}-${String(mesAtual + 1).padStart(2, '0')}`;
-  const isPagoEsteMes = cliente.ultimaCompetenciaPaga === competenciaAtual || 
-                        (cliente.ultimaCompetenciaPaga === undefined && cliente.pagamentoConfirmado);
+  const dataVencimentoAtual = new Date(anoAtual, mesAtual, diaVencimento);
 
-  if (isPagoEsteMes) {
+  if (cliente.ultimaCompetenciaPaga === competenciaAtual) {
+    const prox = getProximoVencimentoData(cliente);
+    if (prox) {
+       const diffTime = prox.getTime() - hoje.getTime();
+       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+       if (diffDays >= 0 && diffDays <= 5) {
+         return "A VENCER";
+       }
+    }
     return "ATIVO";
   }
 
-  const dataVencimentoAtual = new Date(anoAtual, mesAtual, diaVencimento);
   if (hoje.getTime() > dataVencimentoAtual.getTime()) {
+    if (cliente.ultimaCompetenciaPaga === undefined && cliente.pagamentoConfirmado) {
+       const prox = getProximoVencimentoData(cliente);
+       if (prox) {
+          const diffTime = prox.getTime() - hoje.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          if (diffDays >= 0 && diffDays <= 5) {
+            return "A VENCER";
+          }
+       }
+       return "ATIVO";
+    }
     return "INADIMPLENTE";
   }
 
-  return "A VENCER";
+  const diffTime = dataVencimentoAtual.getTime() - hoje.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays >= 0 && diffDays <= 5) {
+    return "A VENCER";
+  }
+
+  return "ATIVO";
 }
 
 export function getProximoVencimentoData(cliente: any) {
   if (!cliente.dia_vencimento) return null;
 
   const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
   const diaVencimento = cliente.dia_vencimento;
   let mesAvaliado = hoje.getMonth();
   let anoAvaliado = hoje.getFullYear();
   
   const competenciaAtual = `${anoAvaliado}-${String(mesAvaliado + 1).padStart(2, '0')}`;
-  const isPagoEsteMes = cliente.ultimaCompetenciaPaga === competenciaAtual || 
-                        (cliente.ultimaCompetenciaPaga === undefined && cliente.pagamentoConfirmado);
+  const dataVencimentoAtual = new Date(anoAvaliado, mesAvaliado, diaVencimento);
+  
+  let pagoEsteMes = false;
+  if (cliente.ultimaCompetenciaPaga === competenciaAtual) {
+    pagoEsteMes = true;
+  } else if (cliente.ultimaCompetenciaPaga === undefined && cliente.pagamentoConfirmado) {
+    if (hoje.getTime() > dataVencimentoAtual.getTime()) {
+      pagoEsteMes = true;
+    }
+  }
 
-  if (isPagoEsteMes) {
+  if (pagoEsteMes) {
     mesAvaliado++;
     if (mesAvaliado > 11) {
       mesAvaliado = 0;
