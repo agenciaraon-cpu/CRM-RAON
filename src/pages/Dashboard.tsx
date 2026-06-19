@@ -2,7 +2,7 @@ import {
   Users, Target, DollarSign, ArrowUpRight, ArrowDownRight, Briefcase, FileCheck, AlertCircle, CheckCircle2
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip as RechartsTooltip } from 'recharts';
-import { useAppContext, verificarStatusCliente } from '../context/AppContext';
+import { useAppContext, verificarStatusCliente, getProximoVencimentoData } from '../context/AppContext';
 
 const COLORS = ['#FF6B00', '#0066FF', '#0033CC', '#64748b'];
 
@@ -28,7 +28,8 @@ export default function Dashboard() {
   };
 
   const hoje = new Date();
-  
+  hoje.setHours(0, 0, 0, 0);
+
   clients.forEach(cliente => {
     const valor = cliente.value || 0;
     
@@ -40,26 +41,22 @@ export default function Dashboard() {
     
     if (status === "INADIMPLENTE") {
       dashboardFinance.inadimplentes += valor;
-    } else if (!cliente.pagamentoConfirmado && cliente.dia_vencimento) {
-      // Calculate based on the current month's due date
-      const vencimento = new Date(hoje.getFullYear(), hoje.getMonth(), cliente.dia_vencimento);
-      // Adjust if the due date is still coming up this month or has passed
-      // For proper 7/30 days outlook, even if we are at end of month, next month's due dates might be in 30 days
-      // Let's use a simple diff against today:
-      let diffTime = vencimento.getTime() - hoje.getTime();
-      
-      // If it passed this month, maybe they meant next month's? If payment not confirmed, they are either in inadimplente (handled above) or it's today/future.
-      
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    } else {
+      const vencimento = getProximoVencimentoData(cliente);
+      if (vencimento) {
+        vencimento.setHours(0,0,0,0);
+        let diffTime = vencimento.getTime() - hoje.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-      if (cliente.dia_vencimento === hoje.getDate()) {
-        dashboardFinance.receberHoje += valor;
-      }
-      if (diffDays >= 0 && diffDays <= 7) {
-        dashboardFinance.proximos7Dias += valor;
-      }
-      if (diffDays >= 0 && diffDays <= 30) {
-        dashboardFinance.proximos30Dias += valor;
+        if (diffDays === 0) {
+          dashboardFinance.receberHoje += valor;
+        }
+        if (diffDays >= 0 && diffDays <= 7) {
+          dashboardFinance.proximos7Dias += valor;
+        }
+        if (diffDays >= 0 && diffDays <= 30) {
+          dashboardFinance.proximos30Dias += valor;
+        }
       }
     }
   });
@@ -79,17 +76,25 @@ export default function Dashboard() {
     { name: 'Atual', total: totalReceitas }
   ];
 
+  const hasLeads = Object.keys(crmData.leads).length > 0;
+  
   let leadsSource = [
-    { name: 'Instagram', value: 0 },
-    { name: 'Google Ads', value: 0 },
-    { name: 'Indicação', value: 0 },
-    { name: 'Orgânico', value: 0 },
+    { name: 'Sem dados', value: 1 }
   ];
 
-  const hasLeads = Object.keys(crmData.leads).length > 0;
-  if (!hasLeads) {
-     leadsSource = [ { name: 'Sem dados', value: 1 } ];
+  if (hasLeads) {
+    const originCounts: Record<string, number> = {};
+    Object.values(crmData.leads).forEach((lead: any) => {
+      const origin = lead.origem || 'Outros';
+      originCounts[origin] = (originCounts[origin] || 0) + 1;
+    });
+    
+    leadsSource = Object.entries(originCounts).map(([name, value]) => ({
+      name,
+      value
+    }));
   }
+
   return (
     <div className="space-y-6 animate-fade-in pb-10">
       <div>

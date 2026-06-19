@@ -9,7 +9,6 @@ import Clients from './pages/Clients';
 import Projects from './pages/Projects';
 import IA from './pages/IA';
 import Support from './pages/Support';
-import Marketing from './pages/Marketing';
 import Executive from './pages/Executive';
 import Team from './pages/Team';
 
@@ -29,7 +28,6 @@ function Layout() {
             <Route path="/projects" element={<Projects />} />
             <Route path="/ia" element={<IA />} />
             <Route path="/support" element={<Support />} />
-            <Route path="/marketing" element={<Marketing />} />
             <Route path="/executive" element={<Executive />} />
             <Route path="/team" element={<Team />} />
           </Routes>

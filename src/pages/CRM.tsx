@@ -373,7 +373,14 @@ export default function CRM() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Origem</label>
-                  <input type="text" value={formData.origem} onChange={(e) => setFormData({...formData, origem: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-raon-blue" placeholder="Ex: Instagram, Indicação..." />
+                  <select value={formData.origem} onChange={(e) => setFormData({...formData, origem: e.target.value})} className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-raon-blue">
+                    <option value="" disabled>Selecione...</option>
+                    <option value="Instagram">Instagram</option>
+                    <option value="Google Ads">Google Ads</option>
+                    <option value="Indicação">Indicação</option>
+                    <option value="Orgânico">Orgânico</option>
+                    <option value="Outros">Outros</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Temperatura</label>

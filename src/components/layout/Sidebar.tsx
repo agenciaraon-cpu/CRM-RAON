@@ -23,7 +23,6 @@ const navigation = [
   { name: 'Financeiro', to: '/finance', icon: Wallet },
   { name: 'Projetos', to: '/projects', icon: Briefcase },
   { name: 'Atendimento', to: '/support', icon: Headset },
-  { name: 'Marketing', to: '/marketing', icon: Megaphone },
   { name: 'RAON IA', to: '/ia', icon: Bot },
   { name: 'Executivo', to: '/executive', icon: TrendingUp },
   { name: 'Equipe', to: '/team', icon: Users2 },
