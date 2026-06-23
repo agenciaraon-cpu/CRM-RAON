@@ -1,6 +1,7 @@
 import { Building2, Search, Filter, MoreVertical, Plus, X, Trash, CheckCircle2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { useAppContext, verificarStatusCliente, formatProximoVencimento, getCompetenciaAtual } from '../context/AppContext';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 
 const getStatusColor = (status: string) => {
   const normStatus = status.toLowerCase();
@@ -18,6 +19,7 @@ const getStatusColor = (status: string) => {
 export default function Clients() {
   const { clients, addClient, updateClient, removeClient } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -146,7 +148,7 @@ export default function Clients() {
                       </button>
                     )}
                     <button 
-                      onClick={() => removeClient(client.id)}
+                      onClick={() => setClientToDelete(client.id)}
                       className="text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
                     >
                       <Trash className="h-5 w-5" />
@@ -286,6 +288,16 @@ export default function Clients() {
           </div>
         </div>
       )}
+
+      <ConfirmDeleteModal
+        isOpen={!!clientToDelete}
+        onCancel={() => setClientToDelete(null)}
+        onConfirm={() => {
+          if (clientToDelete) removeClient(clientToDelete);
+          setClientToDelete(null);
+        }}
+        message="Tem certeza que quer excluir esse cliente?"
+      />
     </div>
   );
 }

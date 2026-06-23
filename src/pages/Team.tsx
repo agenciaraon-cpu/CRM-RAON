@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Settings, CheckCircle2, Search, Plus, Star, X, Trash } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 
 export default function Team() {
   const { team = [], addTeamMember, removeTeamMember } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [memberToDelete, setMemberToDelete] = useState<number | string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     role: '',
@@ -52,7 +54,7 @@ export default function Team() {
         {team.map((member) => (
           <div key={member.id} className="relative bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col items-center text-center group hover:shadow-md transition-shadow">
             <button 
-              onClick={() => removeTeamMember(member.id)}
+              onClick={() => setMemberToDelete(member.id)}
               className="absolute top-3 right-3 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <Trash className="h-4 w-4" />
@@ -145,6 +147,16 @@ export default function Team() {
           </div>
         </div>
       )}
+
+      <ConfirmDeleteModal
+        isOpen={!!memberToDelete}
+        onCancel={() => setMemberToDelete(null)}
+        onConfirm={() => {
+          if (memberToDelete !== null) removeTeamMember(memberToDelete as any);
+          setMemberToDelete(null);
+        }}
+        message="Tem certeza que quer excluir este membro da equipe?"
+      />
     </div>
   );
 }

@@ -2,10 +2,12 @@ import { DollarSign, TrendingUp, TrendingDown, CreditCard, Download, Plus, X, Tr
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 
 export default function Finance() {
   const { transactions, addTransaction, removeTransaction } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [transactionToDelete, setTransactionToDelete] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     tipo: 'receita',
@@ -182,7 +184,7 @@ export default function Finance() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button 
-                        onClick={() => removeTransaction(t.id)}
+                        onClick={() => setTransactionToDelete(t.id)}
                         className="text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
                       >
                         <Trash className="h-5 w-5" />
@@ -315,6 +317,16 @@ export default function Finance() {
           </div>
         </div>
       )}
+
+      <ConfirmDeleteModal
+        isOpen={!!transactionToDelete}
+        onCancel={() => setTransactionToDelete(null)}
+        onConfirm={() => {
+          if (transactionToDelete) removeTransaction(transactionToDelete);
+          setTransactionToDelete(null);
+        }}
+        message="Tem certeza que quer excluir essa transação?"
+      />
     </div>
   );
 }

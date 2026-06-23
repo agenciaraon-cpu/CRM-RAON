@@ -2,12 +2,14 @@ import { useState, useMemo } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Plus, MoreHorizontal, Calendar, Paperclip, MessageSquare, CheckSquare, X, AlertCircle, Trash } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 
 export default function Projects() {
   const { projectData: data, setProjectData: setData, clients, removeProject } = useAppContext();
   const registeredClients = clients.map(c => c.name).concat('Outro...');
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<{id: string, colId: string} | null>(null);
   const [formData, setFormData] = useState({
     cliente: registeredClients[0] || 'Outro...',
     customClient: '',
@@ -220,7 +222,7 @@ export default function Projects() {
                                     {project.priority}
                                   </span>
                                   <button 
-                                    onClick={() => removeProject(project.id, column.id)}
+                                    onClick={() => setProjectToDelete({ id: project.id, colId: column.id })}
                                     className="text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                                   >
                                     <Trash className="h-4 w-4" />
@@ -408,6 +410,16 @@ export default function Projects() {
             </div>
          </div>
       )}
+
+      <ConfirmDeleteModal
+        isOpen={!!projectToDelete}
+        onCancel={() => setProjectToDelete(null)}
+        onConfirm={() => {
+          if (projectToDelete) removeProject(projectToDelete.id, projectToDelete.colId);
+          setProjectToDelete(null);
+        }}
+        message="Tem certeza que quer excluir esse projeto?"
+      />
     </div>
   );
 }

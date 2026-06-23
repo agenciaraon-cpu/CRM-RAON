@@ -21,9 +21,12 @@ const getStatusIcon = (status: string) => {
   }
 };
 
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
+
 export default function Support() {
   const { tickets = [], addTicket, removeTicket, clients } = useAppContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [ticketToDelete, setTicketToDelete] = useState<number | string | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     client: '',
@@ -144,7 +147,7 @@ export default function Support() {
                   <td className="px-6 py-4 text-slate-600 dark:text-slate-300">{ticket.agent}</td>
                   <td className="px-6 py-4 text-right">
                     <button 
-                      onClick={() => removeTicket(ticket.id)}
+                      onClick={() => setTicketToDelete(ticket.id)}
                       className="text-slate-400 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
                     >
                       <Trash className="h-5 w-5" />
@@ -262,6 +265,16 @@ export default function Support() {
           </div>
         </div>
       )}
+
+      <ConfirmDeleteModal
+        isOpen={!!ticketToDelete}
+        onCancel={() => setTicketToDelete(null)}
+        onConfirm={() => {
+          if (ticketToDelete !== null) removeTicket(ticketToDelete as any);
+          setTicketToDelete(null);
+        }}
+        message="Tem certeza que quer excluir este ticket de suporte?"
+      />
     </div>
   );
 }

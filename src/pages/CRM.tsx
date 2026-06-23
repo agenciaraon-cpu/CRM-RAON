@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Plus, MoreHorizontal, Phone, Mail, Building2, MapPin, Trash, Check, ThumbsUp, ThumbsDown, DollarSign, Briefcase, X } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 
 export default function CRM() {
   const { crmData: data, setCrmData: setData, removeLead } = useAppContext();
@@ -9,6 +10,7 @@ export default function CRM() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditProposalModalOpen, setIsEditProposalModalOpen] = useState(false);
   const [activeLeadId, setActiveLeadId] = useState<string | null>(null);
+  const [leadToDelete, setLeadToDelete] = useState<{id: string, colId: string} | null>(null);
 
   const [formData, setFormData] = useState({
     nome: '',
@@ -254,7 +256,7 @@ export default function CRM() {
                                     </h4>
                                     <div className="flex items-center gap-2">
                                       <button 
-                                        onClick={() => removeLead(lead.id, column.id)}
+                                        onClick={() => setLeadToDelete({ id: lead.id, colId: column.id })}
                                         className="text-slate-400 hover:text-red-500 opacity-0 group-hover/lead:opacity-100 transition-opacity"
                                       >
                                         <Trash className="h-4 w-4" />
@@ -516,6 +518,16 @@ export default function CRM() {
           </div>
         </div>
       )}
+      
+      <ConfirmDeleteModal
+        isOpen={!!leadToDelete}
+        onCancel={() => setLeadToDelete(null)}
+        onConfirm={() => {
+          if (leadToDelete) removeLead(leadToDelete.id, leadToDelete.colId);
+          setLeadToDelete(null);
+        }}
+        message="Tem certeza que quer excluir esse lead do CRM?"
+      />
     </div>
   );
 }
